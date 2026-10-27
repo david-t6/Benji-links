@@ -175,6 +175,19 @@
       outline: 3px solid var(--accent);
       outline-offset: 2px;
     }
+
+    .browser {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 0.95rem;
+      font-weight: 700;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
   </style>
 </head>
 <body class="empty">
@@ -193,6 +206,7 @@
     <p class="lead" id="lead">Nothing to open</p>
     <p class="dest" id="dest">Try a message, a Gmail thread, or a web link.</p>
     <a class="btn" id="open" hidden href="#">Open</a>
+    <a class="browser" id="browser" hidden>Open in browser instead</a>
     <p class="hint"><button type="button" id="back">Back</button> to the previous page</p>
   </main>
   <script>
@@ -284,12 +298,10 @@
             (thread ? "#all/" + thread : "#inbox");
           return {
             kind: "gmail",
-            href: thread
-              ? "googlegmail:///cv=" + thread + "/accountId=" + encodeURIComponent(acct)
-              : "googlegmail://",
+            href: "googlegmail://",
             fallback: fallback,
             label: "Open in Gmail",
-            lead: thread ? "Opening this thread in Gmail." : "Opening Gmail.",
+            lead: "Opening the Gmail app.",
             dest: acct
           };
         }
@@ -306,6 +318,7 @@
       }
 
       var openEl = document.getElementById("open");
+      var browserEl = document.getElementById("browser");
       var leadEl = document.getElementById("lead");
       var destEl = document.getElementById("dest");
       var backEl = document.getElementById("back");
@@ -336,25 +349,21 @@
         return;
       }
 
-      if (plan.kind === "sms") {
-        go(plan.href, false);
-        return;
-      }
-
-      var cancelled = false;
-      function cancel() { cancelled = true; }
-
-      document.addEventListener("visibilitychange", function () {
-        if (document.hidden) cancel();
+      openEl.addEventListener("click", function (event) {
+        event.preventDefault();
+        window.location.href = plan.href;
       });
-      window.addEventListener("pagehide", cancel);
-      openEl.addEventListener("click", cancel);
-
       go(plan.href, false);
-      window.setTimeout(function () {
-        if (cancelled || document.hidden) return;
-        go(plan.fallback, true);
-      }, 1200);
+
+      if (plan.kind === "gmail") {
+        browserEl.href = plan.fallback;
+        browserEl.target = "_blank";
+        browserEl.rel = "noopener";
+        window.setTimeout(function () {
+          if (document.hidden) return;
+          browserEl.hidden = false;
+        }, 3000);
+      }
     })();
   </script>
 </body>

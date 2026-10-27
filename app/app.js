@@ -405,35 +405,33 @@
     } catch (e) { /* ignore */ }
     return "";
   }
-  function openWithFallback(native, fallback) {
-    var hidden = false;
-    function mark() { if (document.hidden) hidden = true; }
-    document.addEventListener("visibilitychange", mark);
-    window.addEventListener("pagehide", mark, { once: true });
-    var timer = setTimeout(function () {
-      document.removeEventListener("visibilitychange", mark);
-      if (hidden || document.hidden) return;
-      location.href = fallback;
-    }, 1200);
-    try { location.href = native; }
-    catch (e) {
-      clearTimeout(timer);
-      location.href = fallback;
-    }
+  var GMAIL_APP = "googlegmail://";
+  function openNative(url) {
+    window.location.href = url;
+  }
+  function showBrowserOffer(anchor, href) {
+    if (!anchor || !href) return;
+    window.setTimeout(function () {
+      if (!anchor.isConnected || document.hidden) return;
+      var row = anchor.parentNode;
+      if (!row || row.querySelector(".browser-offer")) return;
+      var offer = el("a", {
+        class: "browser-offer",
+        href: href,
+        target: "_blank",
+        rel: "noopener",
+        text: "Open in browser instead",
+      });
+      anchor.insertAdjacentElement("afterend", offer);
+    }, 3000);
   }
   function openSmart(raw, ev) {
     if (ev) ev.preventDefault();
     var href = String(raw || "").trim();
     var sms = smsHref(href);
-    if (sms) { location.href = sms; return; }
+    if (sms) { openNative(sms); return; }
     var g = gmailParts(href);
-    if (g) {
-      var native = g.thread
-        ? "googlegmail:///cv=" + g.thread + "/accountId=" + encodeURIComponent(g.email)
-        : "googlegmail://";
-      openWithFallback(native, g.fallback);
-      return;
-    }
+    if (g) { openNative(GMAIL_APP); return; }
     var http = safeHttp(href);
     if (http) window.open(http, "_blank", "noopener");
   }
@@ -446,18 +444,18 @@
     a.append(el("span", { "aria-hidden": "true", text: "›" }));
     if (sms) {
       a.setAttribute("href", sms);
-      a.addEventListener("click", function (e) { e.preventDefault(); location.href = sms; });
+      a.addEventListener("click", function (e) {
+        e.preventDefault();
+        openNative(sms);
+      });
       return a;
     }
     if (g) {
-      var native = g.thread
-        ? "googlegmail:///cv=" + g.thread + "/accountId=" + encodeURIComponent(g.email)
-        : "googlegmail://";
-      a.setAttribute("href", g.fallback);
-      a.dataset.native = native;
+      a.setAttribute("href", GMAIL_APP);
       a.addEventListener("click", function (e) {
         e.preventDefault();
-        openWithFallback(native, g.fallback);
+        openNative(GMAIL_APP);
+        showBrowserOffer(a, g.fallback);
       });
       return a;
     }

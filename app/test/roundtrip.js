@@ -51,7 +51,8 @@ function testLinks() {
   var g = BenjiLinks.plan(thread);
   assert.strictEqual(g.kind, "gmail");
   assert.strictEqual(g.web, thread);
-  assert.strictEqual(g.native, "googlegmail:///cv=demoThread1/accountId=benji.demo%40example.com");
+  assert.strictEqual(g.native, "googlegmail://");
+  assert.strictEqual(g.href, "googlegmail://");
 
   var inbox = "https://mail.google.com/mail/u/?authuser=cafe.demo@example.com#inbox";
   var box = BenjiLinks.plan(inbox);
@@ -61,7 +62,7 @@ function testLinks() {
 
   var hashInbox = "https://mail.google.com/mail/u/?authuser=cafe.demo@example.com#inbox/demoThread9";
   var boxed = BenjiLinks.plan(hashInbox);
-  assert.strictEqual(boxed.native, "googlegmail:///cv=demoThread9/accountId=cafe.demo%40example.com");
+  assert.strictEqual(boxed.native, "googlegmail://");
 
   var web = BenjiLinks.plan("https://example.com/calendar/demo-event");
   assert.strictEqual(web.kind, "web");

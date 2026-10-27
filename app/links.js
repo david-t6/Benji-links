@@ -1,6 +1,7 @@
 /* Hand-off targets for a top-level Safari / home-screen app.
  * sms: opens Messages directly.
- * Gmail web links become googlegmail:// with the original https URL kept as fallback.
+ * Gmail web links open the Gmail app with googlegmail://.
+ * The https URL stays on the plan as a manual browser link, never an automatic navigation.
  * Every other http(s) link is left alone.
  */
 (function (root, factory) {
@@ -24,10 +25,14 @@
         var th = /^(?:all|inbox)\/([A-Za-z0-9]+)$/.exec(gm[2]);
         var threadId = th ? th[1] : gm[2] === "inbox" ? "" : null;
         if (threadId !== null) {
-          var native = threadId
-            ? "googlegmail:///cv=" + threadId + "/accountId=" + encodeURIComponent(email)
-            : "googlegmail://";
-          return { kind: "gmail", href: s, web: s, native: native, email: email, threadId: threadId };
+          return {
+            kind: "gmail",
+            href: "googlegmail://",
+            web: s,
+            native: "googlegmail://",
+            email: email,
+            threadId: threadId,
+          };
         }
       }
     }

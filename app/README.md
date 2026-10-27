@@ -135,9 +135,8 @@ Halfway, all-done, and inbox-zero confetti run only after a tap crosses that lin
 
 These run in the top-level page, not through the hop page.
 
-- `sms:+1…` opens that Messages thread. `sms:` opens Messages.
-- A Gmail thread URL opens `googlegmail:///cv=<threadId>/accountId=<email>`. If the page is still visible after about 1.2 seconds, it falls back to the https link already in the data.
-- An inbox URL (`#inbox`) opens `googlegmail://`, with the same fallback to the web inbox.
+- `sms:+1…` opens that Messages thread. `sms:` opens Messages. Both are a top-level `location.href` from the tap. There is no web fallback.
+- A Gmail thread or inbox URL opens the Gmail app with `googlegmail://`, also by top-level `location.href`. The page does not navigate to `mail.google.com` on its own. If it is still visible about 3 seconds later, a small “Open in browser instead” link appears.
 - Any other http(s) link opens in a new tab.
 
 ## Shell

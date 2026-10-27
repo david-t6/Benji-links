@@ -20,7 +20,7 @@ Open the Messages app with no conversation:
 https://david-t6.github.io/Benji-links/#sms=
 ```
 
-Open a Gmail thread in the Gmail app. If the page is still visible after about 1.2 seconds, it falls back to that thread on the web.
+Open the Gmail app. The page does not jump to Gmail on the web. If it is still showing after about 3 seconds, an “Open in browser instead” link appears.
 
 ```
 https://david-t6.github.io/Benji-links/#gmail=18c0a1b2c3d4e5f6&acct=benji%40gmail.com
@@ -28,7 +28,7 @@ https://david-t6.github.io/Benji-links/#gmail=18c0a1b2c3d4e5f6&acct=benji%40gmai
 
 A literal `@` works as well: `#gmail=18c0a1b2c3d4e5f6&acct=benji@gmail.com`.
 
-Open the Gmail app, falling back to the inbox:
+Open the Gmail app. The browser link, if you tap it, goes to that account’s inbox:
 
 ```
 https://david-t6.github.io/Benji-links/#gmail=&acct=benji%40gmail.com
