@@ -1,72 +1,78 @@
 {
   "v": 1,
-  "UPDATED": "Sample data",
+  "UPDATED": "9:04 AM ET",
   "DAY_ISO": "2026-10-27",
   "DATE_LABEL": "Tuesday, October 27",
   "schedule": [
-    { "start": 6, "end": 7.5, "title": "Example early block" },
-    { "start": 9, "end": 10, "title": "Sample focus time" },
-    { "start": 12, "end": 13, "title": "Demo lunch" },
-    { "start": 15, "end": 16, "title": "Fictional check-in" },
-    { "start": 18, "end": 19.5, "title": "Sample evening group" }
+    { "start": 6, "end": 7.5, "title": "Morning reading" },
+    { "start": 8, "end": 9, "title": "Quiet hour" },
+    { "start": 9.5, "end": 10.5, "title": "Example meeting" },
+    { "start": 11, "end": 12, "title": "Sample call" },
+    { "start": 18, "end": 19, "title": "Prep" },
+    { "start": 19, "end": 21, "title": "Group night" }
   ],
   "groups": [
     {
       "name": "Church",
       "waiting": [
         {
-          "text": "Jordan Example: confirm the Saturday sample meetup",
+          "text": "Alex Example: send the banner specs",
           "meta": "Since Monday",
-          "src": { "label": "Open text", "href": "sms:+15555550100" }
-        },
-        {
-          "text": "Riley Sample: send the fictional reading list",
-          "meta": "No reply yet",
           "src": {
             "label": "Open email",
-            "href": "https://mail.google.com/mail/u/?authuser=church.demo@example.com#all/demoThreadChurch1"
+            "href": "https://mail.google.com/mail/u/?authuser=church@example.com#all/demoThreadChurch1"
           }
+        },
+        {
+          "text": "Sam Sample: confirm Saturday time",
+          "meta": "No reply yet",
+          "src": { "label": "Open text", "href": "sms:+15555550100" }
         }
       ],
       "todo": [
         {
-          "text": "Prepare the example welcome note",
-          "meta": "You meet at 9:00",
-          "src": { "label": "Open event", "href": "https://example.com/calendar/demo-event" }
+          "text": "Ask Riley about Sunday start",
+          "meta": "You meet at 9:30",
+          "src": { "label": "Open event", "href": "https://www.google.com/calendar/event?eid=sampleEvent" }
         },
-        { "text": "Update the sample roster" }
+        { "text": "Update the website notes" }
       ]
     },
     {
       "name": "Weekday Coffee",
       "waiting": [
         {
-          "text": "Avery Demo: which sample cup sizes",
-          "meta": "Replied yesterday",
+          "text": "Casey Cafe: which cup sizes",
+          "meta": "Replied Monday",
           "src": {
             "label": "Open email",
-            "href": "https://mail.google.com/mail/u/?authuser=cafe.demo@example.com#all/demoThreadCafe1"
+            "href": "https://mail.google.com/mail/u/?authuser=cafe@example.com#all/demoThreadCafe1"
           }
         }
       ],
       "todo": [
         {
-          "text": "Sign for the example package",
+          "text": "Sign for the sample package",
           "meta": "By noon",
           "src": {
             "label": "Open email",
-            "href": "https://mail.google.com/mail/u/?authuser=cafe.demo@example.com#all/demoThreadCafe2"
+            "href": "https://mail.google.com/mail/u/?authuser=cafe@example.com#all/demoThreadCafe2"
           }
         },
-        { "text": "Test the new sample lids" }
+        {
+          "text": "Pay the demo invoice ($48)",
+          "meta": "Unpaid",
+          "src": { "label": "Open site", "href": "https://example.com/invoice/0008" }
+        },
+        { "text": "Sample invoice already paid", "done": true, "meta": "Paid yesterday" }
       ]
     },
     {
       "name": "Grace & Growth",
       "waiting": [
         {
-          "text": "Quinn Example: sample insurance question",
-          "meta": "Office is checking",
+          "text": "Pat Example: waiting on a sample check",
+          "meta": "Asked Monday",
           "src": { "label": "Open text", "href": "sms:" }
         }
       ],
@@ -76,20 +82,16 @@
       "name": "Personal",
       "waiting": [],
       "todo": [
-        { "text": "Example utilities split ($20 each)" },
+        { "text": "Request roommates for utilities (example only)", "meta": "$10 each" },
         {
-          "text": "Review the sample subscription",
-          "src": { "label": "Open site", "href": "https://example.com/billing" }
-        },
-        {
-          "text": "Fictional refund follow-up",
-          "done": true,
-          "meta": "Sample closed",
+          "text": "Demo order on hold",
+          "meta": "Card declined in this sample",
           "src": {
             "label": "Open email",
-            "href": "https://mail.google.com/mail/u/?authuser=personal.demo@example.com#all/demoThreadPersonal1"
+            "href": "https://mail.google.com/mail/u/?authuser=personal@example.com#all/demoThreadHome1"
           }
-        }
+        },
+        { "text": "Example refund already back", "done": true, "meta": "$10.00 sample refund" }
       ]
     }
   ],
@@ -97,93 +99,81 @@
     {
       "lead": "Text",
       "title": "Jordan Example",
-      "sms": "+15555550100",
-      "meta": "Mon 5:05p",
-      "detail": "Wants a sample OK before sending the note. Next: review and reply."
-    },
-    {
-      "lead": "Text",
-      "title": "Riley Sample",
       "sms": "+15555550101",
-      "meta": "Mon 1:51p",
-      "detail": "Saturday example meetup. Next: send a time."
+      "meta": "Mon 5:05p",
+      "detail": "Wants a quick OK before sending the note. Next: review and reply."
     },
     {
       "lead": "Cafe",
-      "title": "Avery Demo",
+      "title": "Casey Cafe",
       "meta": "Mon 10:01a",
       "detail": "Asks which sample cup sizes you want. Next: reply with sizes."
     },
     {
-      "lead": "Text",
-      "title": "(555) 010-0199 (Sam Example)",
-      "sms": "+15555550199",
-      "meta": "Sun 9:42p",
-      "detail": "Sent example info for a parking pass. Next: file the pass."
+      "lead": "Church",
+      "title": "Riley Sample",
+      "meta": "Mon 9:37a",
+      "detail": "Example trip invite. Next: reply or pass."
     }
   ],
   "fyi": [
     {
-      "lead": "Cafe",
-      "title": "Example Delivery",
-      "meta": "Mon 9:15p",
-      "detail": "Signature needed for a sample package."
+      "lead": "Text",
+      "title": "(555) 010-0199 (Blake)",
+      "sms": "+15555550199",
+      "meta": "Mon 9:42p",
+      "detail": "Stops by Wednesday at 10. Confirmed."
     },
     {
       "lead": "Text",
-      "title": "Quinn Example",
+      "title": "Pat and Robin",
       "group": true,
       "meta": "Mon 2:58p",
-      "detail": "Sample question is with the office. Next: wait for their note."
+      "detail": "Sample thread. Nothing to do."
     },
     {
       "lead": "Personal",
-      "title": "Example Store",
+      "title": "Example Shop",
       "meta": "Mon 8:39p",
-      "detail": "A sample payment was declined."
+      "detail": "Payment declined on a sample order. Next: update the card."
     }
   ],
   "gmail": {
-    "Cafe": { "name": "Cafe", "email": "cafe.demo@example.com" },
-    "Church": { "name": "Church", "email": "church.demo@example.com" },
-    "Personal": { "name": "Personal", "email": "personal.demo@example.com" }
+    "Cafe": { "name": "Cafe", "email": "cafe@example.com" },
+    "Church": { "name": "Church", "email": "church@example.com" },
+    "Personal": { "name": "Personal", "email": "personal@example.com" }
   },
   "purchases": [
-    { "lead": "10/27", "title": "Example Market", "detail": "Sample card 1111", "meta": "$24.00", "pending": true },
-    { "lead": "10/27", "title": "Demo Cafe", "detail": "Sample card 1111", "meta": "$16.50" },
-    { "lead": "10/26", "title": "Fictional Transit", "detail": "Demo card 2222", "meta": "$20.00", "pending": true },
-    { "lead": "10/25", "title": "Sample Books", "detail": "Demo card 2222", "meta": "$15.00" },
-    { "lead": "10/24", "title": "Example Grocery", "detail": "Sample card 1111", "meta": "$21.00" },
-    { "lead": "10/23", "title": "Demo Hardware", "detail": "Example cash 3333", "meta": "$7.19" },
-    { "lead": "10/22", "title": "Sample Donuts", "detail": "Sample card 1111", "meta": "$8.50", "pending": true },
-    { "lead": "10/21", "title": "Example Pharmacy", "detail": "Demo card 2222", "meta": "$5.00" }
+    { "lead": "10/27", "title": "Example Market", "detail": "Sample card 4242", "meta": "$12.34", "pending": true },
+    { "lead": "10/26", "title": "Demo Lunch", "detail": "Sample card 4242", "meta": "$18.50", "pending": true },
+    { "lead": "10/25", "title": "Sample Bookstore", "detail": "Demo checking 0000", "meta": "$24.00" },
+    { "lead": "10/24", "title": "Example Tools", "detail": "Sample card 1111", "meta": "$9.00" }
   ],
   "byAccount": [
-    { "label": "Sample card 1111", "value": 70, "display": "$70.00" },
-    { "label": "Demo card 2222", "value": 40, "display": "$40.00" },
-    { "label": "Example cash 3333", "value": 7.19, "display": "$7.19" }
+    { "label": "Sample card 4242", "value": 30.84, "display": "$30.84" },
+    { "label": "Demo checking 0000", "value": 24, "display": "$24.00" },
+    { "label": "Sample card 1111", "value": 9, "display": "$9.00" }
   ],
   "cash": [
-    { "title": "Example checking 3333", "meta": "$1,000.00" },
-    { "title": "Sample wallet", "detail": "Demo balance", "meta": "$250.00" },
-    { "title": "Demo savings 4444", "meta": "$80.00" }
+    { "title": "Demo checking 0000", "meta": "$1,234.56" },
+    { "title": "Sample wallet", "meta": "$100.00" },
+    { "title": "Example savings 9999", "detail": "Savings", "meta": "$50.00" }
   ],
   "owed": [
-    { "title": "Example card 5555", "meta": "$120.00" },
-    { "title": "Demo card 2222", "meta": "$40.00" },
-    { "title": "Sample loan 6666", "meta": "$2,000.00" }
+    { "title": "Sample card 4242", "meta": "$80.00" },
+    { "title": "Demo card 1111", "meta": "$15.00" }
   ],
   "spend": {
-    "total": "$117.19",
-    "period": "10/21-10/27",
-    "count": "8 purchases",
-    "refunds": "$9.99",
-    "refundsDetail": "Example Refund Co",
-    "note": "Transfers and card payments left out. These amounts are sample data.",
-    "footnote": "Sample balances only. Not a real account."
+    "total": "$63.84",
+    "period": "10/20-10/27",
+    "count": "4 purchases",
+    "refunds": "$10.00",
+    "refundsDetail": "Example refund",
+    "note": "Sample data only. Transfers left out.",
+    "footnote": "Fake example data for the demo. Not a real account."
   },
   "skipped": {
     "count": "About 12",
-    "detail": "Sample promos and newsletters. Not real mail. Church 2, Cafe 4, Personal 6."
+    "detail": "Sample promos and receipts. Nothing here is real. Church 2, Cafe 4, Personal 6."
   }
 }

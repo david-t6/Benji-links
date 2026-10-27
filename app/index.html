@@ -4,85 +4,21 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="color-scheme" content="light">
-  <meta name="supported-color-schemes" content="light">
-  <meta name="theme-color" content="#ffffff">
+  <meta name="theme-color" content="#FFFFFF">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="Benji's Day">
-  <meta name="referrer" content="no-referrer">
+  <meta name="format-detection" content="telephone=no">
   <title>Benji's Day</title>
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" href="icon-180.png">
-  <link rel="icon" href="icon-192.png" type="image/png">
-  <link rel="stylesheet" href="styles.css">
-  <style>
-    html, body { background: #ffffff; color: #111214; color-scheme: light; }
-  </style>
-  <script>
-    (function () {
-      var path = location.pathname;
-      if (path.charAt(path.length - 1) !== "/" && !/\.[A-Za-z0-9]+$/.test(path)) {
-        location.replace(path + "/" + location.search + location.hash);
-        return;
-      }
-      if (/[?&]demo=1(?:&|$)/.test(location.search)) document.documentElement.classList.add("demo-boot");
-    })();
-  </script>
+  <link rel="icon" type="image/png" href="icon-192.png">
+  <link rel="stylesheet" href="app.css">
 </head>
 <body>
-  <main id="gate" class="gate">
-    <div class="gate-card">
-      <div class="mark" aria-hidden="true">
-        <svg width="32" height="32" viewBox="0 0 14 14">
-          <path d="M3 7.4 L5.8 10 L11 4.2" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path>
-        </svg>
-      </div>
-      <h1>Benji's Day</h1>
-      <p class="prompt" id="prompt">Enter your passcode</p>
-      <form id="gate-form">
-        <input id="pass" name="passcode" type="password" autocomplete="current-password" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="go" aria-label="Passcode">
-        <button type="submit" class="unlock" id="unlock">Continue</button>
-        <p class="gate-error" id="gate-error" role="alert"></p>
-      </form>
-    </div>
-  </main>
-
-  <div id="main" class="app" hidden>
-    <div class="wrap">
-      <div class="title-row">
-        <h1>Benji's Day</h1>
-        <button type="button" class="settings-btn" id="settings-btn" aria-label="Settings">
-          <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true">
-            <circle cx="11" cy="5" r="1.6" fill="#6B7076"></circle>
-            <circle cx="11" cy="11" r="1.6" fill="#6B7076"></circle>
-            <circle cx="11" cy="17" r="1.6" fill="#6B7076"></circle>
-          </svg>
-        </button>
-      </div>
-      <p id="demo-note" class="demo-note" hidden>Sample data on this device. Nothing is sent.</p>
-      <section id="hero" class="hero" aria-label="Today"></section>
-      <nav id="tabs" class="tabs" aria-label="Sections"></nav>
-      <div id="panel" class="panel"></div>
-    </div>
-  </div>
-
-  <div id="cheer" hidden></div>
-
-  <div id="sheet" class="sheet-root" hidden>
-    <div class="backdrop" id="sheet-backdrop"></div>
-    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
-      <div class="handle" aria-hidden="true"></div>
-      <h2 id="sheet-title">Settings</h2>
-      <p class="sync" id="sync-note"></p>
-      <button type="button" class="unlock" id="lock-btn">Lock</button>
-      <button type="button" class="press gray" id="sheet-close">Close</button>
-    </div>
-  </div>
-
-  <noscript>Benji's Day needs JavaScript to unlock and show the day.</noscript>
+  <div id="app"></div>
   <script src="crypto.js"></script>
-  <script src="links.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

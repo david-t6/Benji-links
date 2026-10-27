@@ -1,151 +1,153 @@
 # Benji's Day
 
-Installable iPhone web app for a bright, one-accent daily dashboard (To-do, Inbox, Finances). It is served by GitHub Pages at [https://david-t6.github.io/Benji-links/app/](https://david-t6.github.io/Benji-links/app/).
+Installable iPhone web app for today's list, inbox, and spending. It is served by GitHub Pages at [https://david-t6.github.io/Benji-links/app/](https://david-t6.github.io/Benji-links/app/). The hop page at the site root is separate and is not part of this app.
 
-The root `index.html` in this repo is a separate link hop. This app does not use it. Text and Gmail links open the native apps directly because the page runs at the top level (Safari or the home-screen app).
+The page is always light: white background, `color-scheme: light`, and a white theme color. Add it to the home screen and it opens standalone, with the default status bar and the safe areas padded in.
 
-## Install on an iPhone
+## Install
 
-1. Open [https://david-t6.github.io/Benji-links/app/](https://david-t6.github.io/Benji-links/app/) in Safari.
+1. Open [https://david-t6.github.io/Benji-links/app/](https://david-t6.github.io/Benji-links/app/) in Safari on the iPhone.
 2. Tap Share.
 3. Tap Add to Home Screen.
-4. Open Benji's Day from the home screen.
-5. Enter the passcode once. It stays on this phone until you tap Settings and Lock.
+4. Open Benji's Day, enter the passcode, and leave "Use Face ID to unlock" on if you want Face ID next time.
 
-The app is light only (white background, black text, one green). Add `?demo=1` to the URL to skip the passcode and load the fake sample file instead of the encrypted snapshot.
+`?demo=1` loads `data.sample.json` instead. That file is fake example data and is not encrypted, so the demo skips the passcode and Face ID.
 
-## What the app loads
+## Data
 
-| URL | Role |
+`app/data.enc.json` is written hourly by an outside script. It is not in this repo. The app fetches it with `cache: "no-store"` and a `?t=` cache-buster. The service worker treats that file as network-first and falls back to the last cached copy only when the network fails.
+
+The file on disk is an encrypted envelope (below). After decryption the plaintext is UTF-8 JSON, version `v: 1`, whose keys are the dashboard fields:
+
+| Key | Meaning |
 | --- | --- |
-| `data.enc.json` | Hourly snapshot. Fetched with `cache: "no-store"`. Not committed. |
-| `data.sample.json` | Unencrypted fake data, same shape. Used only when the URL is `?demo=1`. |
+| `UPDATED` | Snapshot time, shown as "Updated …". Example: `"9:04 AM ET"`. |
+| `DAY_ISO` | `YYYY-MM-DD` for the snapshot. The Now marker only shows when the phone's local date matches. |
+| `DATE_LABEL` | Heading date, such as `"Tuesday, October 27"`. |
+| `schedule` | `{ start, end, title }`. Hours are decimals (`9.5` is 9:30), sorted by start. |
+| `groups` | `{ name, waiting, todo }`. Names used by the page: Church, Weekday Coffee, Grace & Growth, Personal. A task is `{ text, meta?, done?, src? }`. `src` is `{ label, href }` (`Open email`, `Open text`, `Open event`, `Open site`). `waiting` items start unchecked. `todo` items may set `done: true`. Empty groups are hidden. |
+| `needsReply`, `fyi` | `{ lead, title, meta, detail, sms?, group? }`. `lead` is `Text`, `Church`, `Cafe`, or `Personal`. `meta` is the time on the right. `detail` is a summary, optionally followed by `"Next: …"`. Text rows set `sms` to `+1…`. Group chats set `group: true`. |
+| `gmail` | Map of lead to `{ name, email }` for the inbox Gmail buttons. |
+| `purchases` | `{ lead, title, detail, meta, pending? }`, newest first. `lead` is `MM/DD`. `detail` is the account (last 4 only). `meta` is the amount. |
+| `byAccount` | `{ label, value, display }`, largest first. Bar width is relative to the max `value`. |
+| `cash`, `owed` | `{ title, detail?, meta }`. |
+| `spend` | `{ total, period, count, refunds, refundsDetail, note, footnote }`. |
+| `skipped` | `{ count, detail }`. |
 
-The service worker caches the shell (HTML, CSS, JS, icons, manifest) and uses network-first for `data.enc.json` and `data.sample.json`, falling back to the last cached copy when the phone is offline.
+`data.sample.json` is the same object, unencrypted, with obviously fake rows.
 
-Checked-off items are stored in `localStorage` and also published to ntfy (except in demo mode). Demo ticks use a separate storage key and are never sent.
-
-## Plaintext data shape
-
-`data.enc.json` decrypts to a UTF-8 JSON object. `v` is `1`. Every other key is one of the snapshot variables:
-
-- `UPDATED` string, shown after the date (`"9:41 AM ET"`).
-- `DAY_ISO` string `YYYY-MM-DD`. The Now / Up next marker only appears when the phone's local date matches this.
-- `DATE_LABEL` string, for example `"Tuesday, October 27"`.
-- `schedule` array of `{ start, end, title }`. Hours are decimals (`9.5` is 9:30), sorted by `start`.
-- `groups` array of `{ name, waiting, todo }`. Names are Church, Weekday Coffee, Grace & Growth, and Personal. Each task is `{ text, meta?, done?, src? }`. `src` is `{ label, href }` (`Open email`, `Open text`, `Open event`, `Open site`). Omit `src` when there is no real link. Groups with no tasks are hidden.
-- `needsReply` and `fyi`: `{ lead, title, meta, detail, sms?, group? }`. `lead` is `Text`, `Church`, `Cafe`, or `Personal`. `detail` may contain `Next: ...`, which is the expanded next step. A title like `(555) 010-0199 (Sam Example)` is shown as `Sam Example`.
-- `gmail`: map of lead to `{ name, email }` for Cafe, Church, and Personal.
-- `purchases`: `{ lead: "MM/DD", title, detail, meta, pending? }`, newest first. `detail` is the account label (last 4 only). `meta` is the amount, such as `"$12.34"`.
-- `byAccount`: `{ label, value, display }`, largest first. Bar width is relative to the max `value`.
-- `cash` and `owed`: `{ title, detail?, meta }`.
-- `spend`: `{ total, period, count, refunds, refundsDetail, note, footnote }`.
-- `skipped`: `{ count, detail }`.
-
-`data.sample.json` is the same object with obviously fake example.com addresses, 555 numbers, and sample amounts. Do not put real account numbers, addresses, or codes in either file.
-
-A to-do id is `group|w|text` (waiting) or `group|t|text` (to-do). An inbox id is `title|meta`. Keep those strings stable across hourly snapshots or the saved tick will not match.
-
-Done state for an item is the newest local or ntfy event for that id, if one exists. Otherwise it is the task's own `done` flag (inbox items are not done unless an event says so).
+Links inside the data stay raw. Text is `sms:+1…` or `sms:` for a group chat. Mail is `https://mail.google.com/mail/u/?authuser=<email>#all/<threadId>` or `#inbox`. The app turns those into native hand-offs at tap time. It does not store hop URLs or `googlegmail://` in the file.
 
 ## Encryption
 
-`data.enc.json` and every ntfy message use the same envelope. `app/crypto.js` is what the page runs. `app/test/roundtrip.js` encrypts with Node's `crypto` and checks that this file decrypts it, then the other way around.
+The envelope is JSON, standard base64 (with padding):
 
 ```json
 {"v":1,"salt":"<base64>","iv":"<base64>","ct":"<base64>"}
 ```
 
-- `salt` is 16 random bytes.
-- `iv` is 12 random bytes.
-- Key is PBKDF2-HMAC-SHA256 of the passcode as UTF-8, salt, **210000** iterations, **32-byte** output.
-- Cipher is AES-256-GCM.
-- `ct` is the ciphertext with the 16-byte GCM tag appended (WebCrypto's default). There is no separate tag field.
-- Base64 is standard RFC 4648 (`+`, `/`, `=` padding), not base64url.
-- Plaintext is UTF-8 JSON. The snapshot's own `v` is also `1`.
+- `salt` is 16 bytes.
+- `iv` is 12 bytes.
+- Key is PBKDF2-SHA256 of the passcode as UTF-8, that salt, **210000** iterations, producing AES-256-GCM.
+- `ct` is the WebCrypto ciphertext, which is the ciphertext with the 16-byte GCM tag appended.
+- The decrypted bytes are UTF-8 JSON as described above.
 
-Node equivalent, which the hourly writer should match:
+The same envelope wraps each check-off event before it is posted to ntfy. A wrong passcode or a damaged payload decrypts to nothing and is ignored.
 
-```js
-const crypto = require("crypto");
+The passcode is not sent to ntfy. It is only used as the PBKDF2 input and in the topic hash below.
 
-function encrypt(passcode, obj) {
-  const salt = crypto.randomBytes(16);
-  const iv = crypto.randomBytes(12);
-  const key = crypto.pbkdf2Sync(Buffer.from(String(passcode), "utf8"), salt, 210000, 32, "sha256");
-  const cipher = crypto.createCipheriv("aes-256-gcm", key, iv);
-  const pt = Buffer.from(JSON.stringify(obj), "utf8");
-  const ct = Buffer.concat([cipher.update(pt), cipher.final(), cipher.getAuthTag()]);
-  return {
-    v: 1,
-    salt: salt.toString("base64"),
-    iv: iv.toString("base64"),
-    ct: ct.toString("base64"),
-  };
-}
-```
+## Face ID
 
-The passcode is saved in `localStorage` under `benjis-day:passcode` only after a snapshot decrypts. Lock removes that key and returns to the passcode screen. Ticks stay on the device.
+After the passcode decrypts for the first time, the app offers **Use Face ID to unlock**. The switch starts on. Continue creates a passkey. Not now (switch off, then Continue) stores the passcode and does not ask again until Settings.
 
-## ntfy events
+The passkey is WebAuthn:
 
-Topic name:
+- Platform authenticator (`authenticatorAttachment: "platform"`).
+- `userVerification: "required"` on create and on get.
+- `residentKey: "preferred"`.
+- Relying party id is `location.hostname`. On the phone that is `david-t6.github.io`.
+- ES256 and RS256. Attestation is `none`.
+- User id is random. Display name is Benji.
 
-```text
-benji- + first 24 hex characters of SHA-256("benji-topic:" + passcode)
-```
+The unlock screen has a large **Unlock with Face ID** button, because iOS often requires a tap before it will show Face ID. **Use passcode instead** is always there. On open, the app also calls `navigator.credentials.get` immediately, before any other await, so a home-screen tap can count as the gesture. If the browser blocks that call, the button stays and no error is shown until a tap fails.
 
-Example shape: `benji-0123456789abcdef01234567`.
+Which mode is stored is decided by the authenticator at enrollment, and written to `localStorage` key `benjis-day:face` as `mode`.
 
-Each check, uncheck, inbox Done, or Show again publishes one event. The ntfy message body is an envelope (same encryption as above) around this JSON:
+### PRF mode (`mode` is `"prf"`)
+
+Used when registration, or the follow-up `get` in the same setup, returns a 32-byte `extensions.prf.results.first`.
+
+- PRF salt (`extensions.prf.eval.first` on both create and get) is the 32-byte SHA-256 of the UTF-8 string `benji-day:face-id:prf:v1`.
+- That 32-byte PRF output is the HKDF input key.
+- HKDF-SHA256, salt UTF-8 `benji-day:face-id:hkdf-salt:v1`, info UTF-8 `benji-day:passcode-wrap:v1`, 256-bit AES-GCM key.
+- A fresh 12-byte iv. Ciphertext includes the GCM tag, standard base64.
+- Stored record: `{ "v": 1, "mode": "prf", "credentialId": "<base64 rawId>", "wrapped": { "v": 1, "iv": "<base64>", "ct": "<base64>" } }`.
+- The plaintext passcode is removed from `localStorage`. On open, Face ID evaluates the PRF, unwraps the passcode, then decrypts `data.enc.json`.
+
+Settings says: "Your passcode is locked behind Face ID and isn't stored on this phone."
+
+### UV gate (`mode` is `"uv"`)
+
+Used when the authenticator does not return a PRF result. The passcode stays in `localStorage` under `benjis-day:passcode`. The face record is `{ "v": 1, "mode": "uv", "credentialId": "<base64 rawId>" }` with no `wrapped` field. The app will not decrypt or show the day until `navigator.credentials.get` succeeds with user verification. The assertion's user-verified flag is required when the browser exposes authenticator data.
+
+Settings says: "Face ID checks it's you. Your passcode stays saved on this phone."
+
+Turning the Settings switch off deletes the face record, writes the passcode back into `localStorage`, and remembers that the offer was skipped (`benjis-day:face-offer` = `skip`). **Set up again** creates a new passkey and wraps again, so a phone that gains PRF later can move to PRF mode.
+
+## Check-offs and ntfy
+
+Taps are stored in `localStorage` key `benjis-day:v2` as `{ overrides, queue }` so they survive a reload.
+
+- To-do id: `group|kind|text`. `kind` is `w` for a waiting item and `t` for a to-do. Example: `Church|w|Ask Riley about Sunday start`.
+- Inbox id: `title|meta|summary`, where summary is the detail before `Next:`.
+
+An event is plaintext JSON, then encrypted with the envelope above:
 
 ```json
-{"type":"todo","id":"Church|t|Prepare the example welcome note","text":"Prepare the example welcome note","done":true,"at":"2026-10-27T15:04:05.123Z"}
+{"type":"todo","id":"Church|t|Ask Riley about Sunday start","text":"Ask Riley about Sunday start","done":true,"at":"2026-10-27T15:04:00.000Z"}
 ```
 
-- `type` is `todo` or `inbox`.
-- `id` is the stable id above.
-- `text` is the task text, or the inbox item's title.
-- `done` is `true` or `false`.
-- `at` is an ISO-8601 UTC timestamp. The newest `at` wins. An equal `at` keeps the event already stored.
+`type` is `todo` or `inbox`. `at` is an ISO-8601 UTC timestamp. `done` is boolean.
 
-Publish:
+A Sync tap or a pull-to-refresh also posts one extra event, after the queued check-offs:
 
-```http
-POST https://ntfy.sh/<topic>
-Content-Type: text/plain; charset=utf-8
-
-{"v":1,"salt":"...","iv":"...","ct":"..."}
+```json
+{"type":"refresh","id":"refresh","at":"2026-10-27T15:04:00.000Z"}
 ```
 
-On load, when the app comes back to the foreground, and when the phone is online again, it reads:
+That asks the box for a new pass over email, texts, and calendar. It uses the same encrypted envelope. The app sends at most one of these every 2 minutes, and never on the automatic sync that runs when the app opens or comes back to the foreground. When the app reads ntfy, it ignores `type: "refresh"` so it is not applied as a check-off. The box should do the same.
 
-```http
-GET https://ntfy.sh/<topic>/json?poll=1&since=12h
-```
+The ntfy topic is `benji-` plus the first 24 hex characters of SHA-256 of the UTF-8 string `benji-topic:` concatenated with the passcode. The app POSTs the envelope as `text/plain` to `https://ntfy.sh/<topic>`. A failed check-off stays in `queue` and is retried on the next sync, when the phone comes online, and when a later tap flushes the queue. A refresh event is not queued. The 2-minute debounce starts only after a successful post, so a failed refresh can be tried again on the next Sync tap.
 
-Each line is an ntfy JSON event. Lines with `event: "message"` are decrypted from `message`. Lines that are not our envelope are ignored. Failed posts sit in `localStorage` (`benjis-day:outbox`, plus `benjis-day:pending` while a key is still being derived) and retry. Demo mode does not call ntfy.
+Sync reads `https://ntfy.sh/<topic>/json?poll=1&since=12h`, decrypts each message body that is an envelope, and merges. The latest `at` wins. An item is done when that latest event says so. If there is no event, a to-do uses its own `done` flag and an inbox row is not done. When a new snapshot's own flag already matches the local override, the override is dropped. An override whose id is gone from the snapshot is dropped too.
 
-These are the only cross-origin requests. The snapshot fetch stays on this origin.
+## Sync
 
-## Hand-off links
+The header control is a circular-arrows button. It spins while a sync is running, then plays a short check pop. The label is `Updated <UPDATED>` from the snapshot, `Syncing…` while it runs, and `Synced just now` for a minute after a clean sync. If events are still queued it says `Saved on this phone`. If the file could not be fetched it says `Couldn't refresh`.
 
-Stored hrefs stay as normal `sms:` and `https:` links. The page converts them at click time.
+A sync flushes the queue, re-fetches the data file (cache-busted), polls ntfy, merges, and re-renders. It runs when the app opens, when the page comes back to the foreground, when the Sync button is tapped, and when you pull down from the top of the list.
 
-- `sms:+15555550100` opens that Messages conversation. A group chat is `sms:`.
-- `https://mail.google.com/mail/u/?authuser=<email>#all/<threadId>` (or `#inbox/<threadId>`) opens `googlegmail:///cv=<threadId>/accountId=<email>`. If the page is still visible after about 1.2 seconds, it opens the original https link.
-- An inbox Reply for an email lead opens `googlegmail://`, then falls back to `https://mail.google.com/mail/u/?authuser=<email>#inbox`.
-- Any other `https` link (calendar, vendor, and so on) opens normally.
+Only the button and the pull publish a `refresh` event. After that post succeeds, the label reads `Refreshing… new data in a few minutes`. The app then re-fetches `data.enc.json` every 30 seconds for up to 10 minutes. When `UPDATED` changes, the arrows do a small check pop and the label becomes `Updated <time>`.
 
-`threadId` is `[A-Za-z0-9]+`. The email is percent-encoded in `accountId`.
+Halfway, all-done, and inbox-zero confetti run only after a tap crosses that line. Loading and syncing do not fire them.
 
-## Local check
+## Hand-off
 
-From the repo root:
+These run in the top-level page, not through the hop page.
+
+- `sms:+1…` opens that Messages thread. `sms:` opens Messages.
+- A Gmail thread URL opens `googlegmail:///cv=<threadId>/accountId=<email>`. If the page is still visible after about 1.2 seconds, it falls back to the https link already in the data.
+- An inbox URL (`#inbox`) opens `googlegmail://`, with the same fallback to the web inbox.
+- Any other http(s) link opens in a new tab.
+
+## Shell
+
+`manifest.webmanifest` sets `display: standalone` and a white theme. Icons are `icon-180.png`, `icon-192.png`, and `icon-512.png` (green rounded square, white check). `sw.js` precaches the shell and uses network-first for `data.enc.json` and `data.sample.json`.
+
+## Test
 
 ```sh
-node app/test/roundtrip.js
-python3 -m http.server 8080
+node --test app/test/crypto.test.cjs
 ```
 
-Open `http://localhost:8080/app/?demo=1` at a phone width. `http://localhost` is a secure context, so WebCrypto works. Opening the files directly from disk will not.
+That encrypts a sample with an independent PBKDF2/AES-GCM implementation and with `crypto.js`, checks both directions, checks the topic hash, and round-trips the Face ID passcode wrap.
