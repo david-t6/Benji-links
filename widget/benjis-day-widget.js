@@ -10,7 +10,7 @@ const CACHE_NAME = "benjis-day-cache.json";
 
 const PAPER = new Color("#FEFAF0");
 const SUN = new Color("#FFBF01");
-const ICON_URL = APP_URL + "icon-180.png?v=6";
+const ICON_URL = APP_URL + "icon-180.png?v=7";
 const ICON_FILE = "benjis-day-icon-v6.png";
 const INK = new Color("#2C261C");
 const SUB = new Color("#7A705F");
@@ -91,10 +91,26 @@ async function passcode() {
 
 async function decryptEnvelope(passcodeValue, env) {
   const view = new WebView();
-  await view.loadURL(APP_URL);
-  const expr = "(async () => { " + DECRYPT_JS + "; return JSON.stringify(await benjiDecrypt(" + JSON.stringify(passcodeValue) + ", " + JSON.stringify(env) + ")); })()";
-  const raw = await view.evaluateJavaScript(expr);
-  if (typeof raw !== "string" || !raw) throw new Error("decrypt");
+  // A blank page on the app origin. crypto.subtle needs a secure base URL,
+  // and loading the app itself would run its scripts and service worker.
+  await view.loadHTML("<html></html>", APP_URL);
+  // evaluateJavaScript does not await a returned Promise unless useCallback
+  // is true. completion() is what actually hands the string back.
+  const expr = DECRYPT_JS
+    + "; benjiDecrypt(" + JSON.stringify(passcodeValue) + ", " + JSON.stringify(env) + ")"
+    + ".then(d => completion(JSON.stringify(d)))"
+    + ".catch(e => completion('ERR:' + ((e && e.name) || 'Error') + ((e && e.message) ? (':' + e.message) : '')));";
+  const raw = await view.evaluateJavaScript(expr, true);
+  if (typeof raw !== "string" || !raw) throw new Error("webview");
+  if (raw.indexOf("ERR:") === 0) {
+    const detail = raw.slice(4);
+    if (detail.indexOf("OperationError") === 0) {
+      const err = new Error("bad passcode");
+      err.name = "OperationError";
+      throw err;
+    }
+    throw new Error(detail || "webview");
+  }
   const data = JSON.parse(raw);
   if (!data || data.v !== 1) throw new Error("decrypt");
   return data;
@@ -115,7 +131,9 @@ async function loadDay(pass) {
     writeCache(fresh);
     return fresh;
   } catch (err) {
-    if (!config.runsInWidget) {
+    // Only a failed AES-GCM check means the passcode is wrong. WebView,
+    // network, and envelope errors keep the Keychain entry and the last day.
+    if (err && err.name === "OperationError" && !config.runsInWidget) {
       try { Keychain.remove(KEYCHAIN_KEY); } catch (ignore) {}
       const alert = new Alert();
       alert.title = "Benji's Day";

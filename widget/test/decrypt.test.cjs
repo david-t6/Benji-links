@@ -23,5 +23,22 @@ test("widget decrypt matches the app envelope", async function () {
   assert.strictEqual(Buffer.from(env.iv, "base64").length, 12);
   const out = await benjiDecrypt(pass, env);
   assert.deepStrictEqual(out, sample);
-  await assert.rejects(function () { return benjiDecrypt("nope", env); });
+  await assert.rejects(function () { return benjiDecrypt("nope", env); }, function (err) {
+    assert.strictEqual(err.name, "OperationError");
+    return true;
+  });
+});
+
+test("webview decrypt waits for completion and only a bad passcode clears the keychain", function () {
+  assert.match(src, /loadHTML\("<html><\/html>", APP_URL\)/);
+  assert.match(src, /evaluateJavaScript\(expr, true\)/);
+  assert.match(src, /completion\(JSON\.stringify\(d\)\)/);
+  assert.match(src, /completion\('ERR:'/);
+  assert.doesNotMatch(src, /evaluateJavaScript\(expr\)/);
+  assert.doesNotMatch(src, /loadURL\(APP_URL\)/);
+  const removes = src.split("Keychain.remove").length - 1;
+  assert.strictEqual(removes, 1);
+  const gate = src.slice(src.indexOf("Keychain.remove") - 180, src.indexOf("Keychain.remove"));
+  assert.match(gate, /OperationError/);
+  assert.match(gate, /!config\.runsInWidget/);
 });
