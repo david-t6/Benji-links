@@ -16,6 +16,14 @@
     passcode: null,
     overrides: {},
     queue: [],
+    added: [],
+    removed: {},
+    snapshotAt: "",
+    addOpen: false,
+    addDraft: "",
+    addSection: "",
+    addFocus: false,
+    freshId: null,
     tab: "todo",
     groupOpen: {},
     showDone: {},
@@ -259,14 +267,75 @@
   function inboxId(item) {
     return item.title + "|" + item.meta + "|" + splitNext(item.detail).what;
   }
+  var SECTIONS = ["Church", "Weekday Coffee", "Grace & Growth", "Personal"];
+  function stableTodoId(task, groupName, kind) {
+    var own = task && typeof task.id === "string" ? task.id : "";
+    // Mine items carry their u- id. Everything else keeps group|kind|text.
+    if (kind === "t" && own && (task.mine === true || own.indexOf("u-") === 0)) return own;
+    return groupName + "|" + kind + "|" + (task && task.text ? task.text : "");
+  }
+  function sectionNames() {
+    return SECTIONS.slice();
+  }
+  function normalizeSection(name) {
+    return SECTIONS.indexOf(name) >= 0 ? name : "Personal";
+  }
+  function userEventOk(ev) {
+    if (!ev || typeof ev.id !== "string" || ev.id.indexOf("u-") !== 0) return false;
+    if (typeof ev.at !== "string" || !ev.at) return false;
+    if (ev.type === "remove") return true;
+    if (ev.type !== "add") return false;
+    return typeof ev.text === "string" && ev.text.trim().length > 0;
+  }
+  function dataTodoIds() {
+    var ids = {};
+    (S.data && S.data.groups || []).forEach(function (g) {
+      (g.todo || []).forEach(function (t) {
+        if (t && typeof t.id === "string" && t.id) ids[t.id] = true;
+      });
+    });
+    return ids;
+  }
   function allTodos() {
     var out = [];
+    var seen = {};
     (S.data.groups || []).forEach(function (g) {
       (g.waiting || []).forEach(function (w) {
-        out.push({ text: w.text, meta: w.meta, src: w.src, done: false, id: g.name + "|w|" + w.text, waiting: true, group: g.name });
+        var id = stableTodoId(w, g.name, "w");
+        if (S.removed[id]) return;
+        seen[id] = true;
+        out.push({ text: w.text, meta: w.meta, src: w.src, done: false, id: id, waiting: true, group: g.name, mine: false });
       });
       (g.todo || []).forEach(function (t) {
-        out.push({ text: t.text, meta: t.meta, src: t.src, done: !!t.done, id: g.name + "|t|" + t.text, waiting: false, group: g.name });
+        var id = stableTodoId(t, g.name, "t");
+        if (S.removed[id]) return;
+        if (seen[id]) return;
+        seen[id] = true;
+        var mine = t.mine === true || (typeof t.id === "string" && t.id.indexOf("u-") === 0);
+        var section = mine ? normalizeSection(t.section) : g.name;
+        out.push({
+          text: t.text,
+          meta: t.meta,
+          src: t.src,
+          done: !!t.done,
+          id: id,
+          waiting: false,
+          group: section,
+          mine: mine,
+        });
+      });
+    });
+    (S.added || []).forEach(function (a) {
+      if (!a || seen[a.id] || S.removed[a.id]) return;
+      seen[a.id] = true;
+      out.push({
+        text: a.text,
+        meta: "",
+        done: false,
+        id: a.id,
+        waiting: false,
+        group: normalizeSection(a.section),
+        mine: true,
       });
     });
     return out;
@@ -326,18 +395,71 @@
       var p = JSON.parse(raw);
       S.overrides = p.overrides && typeof p.overrides === "object" ? p.overrides : {};
       S.queue = Array.isArray(p.queue) ? p.queue : [];
+      S.added = Array.isArray(p.added) ? p.added.filter(function (a) {
+        return a && typeof a.id === "string" && a.id.indexOf("u-") === 0 && typeof a.text === "string" && a.text;
+      }) : [];
+      S.removed = p.removed && typeof p.removed === "object" ? p.removed : {};
+      S.snapshotAt = typeof p.snapshotAt === "string" ? p.snapshotAt : "";
     } catch (e) {
       S.overrides = {};
       S.queue = [];
+      S.added = [];
+      S.removed = {};
     }
   }
   function saveState() {
-    try { localStorage.setItem(STATE_KEY, JSON.stringify({ overrides: S.overrides, queue: S.queue })); }
-    catch (e) { /* storage full or blocked */ }
+    try {
+      localStorage.setItem(STATE_KEY, JSON.stringify({
+        overrides: S.overrides,
+        queue: S.queue,
+        added: S.added,
+        removed: S.removed,
+        snapshotAt: S.snapshotAt,
+      }));
+    } catch (e) { /* storage full or blocked */ }
+  }
+  function adoptData(data) {
+    S.data = data;
+    S.snapshotAt = nowIso();
+  }
+  function reconcileMine() {
+    var published = dataTodoIds();
+    S.added = (S.added || []).filter(function (item) { return item && !published[item.id]; });
+    Object.keys(S.removed || {}).forEach(function (id) {
+      if (published[id]) return;
+      if (S.snapshotAt && String(S.removed[id] || "") < S.snapshotAt) delete S.removed[id];
+    });
+  }
+  function upsertAdded(ev) {
+    var text = String(ev.text || "").trim();
+    if (!text) return;
+    var section = normalizeSection(ev.section);
+    var cur = null;
+    (S.added || []).forEach(function (a) { if (a.id === ev.id) cur = a; });
+    if (cur) {
+      if (String(cur.at || "") >= ev.at) return;
+      cur.text = text;
+      cur.section = section;
+      cur.at = ev.at;
+      if (!S.removed[ev.id] || String(S.removed[ev.id]) < ev.at) delete S.removed[ev.id];
+      return;
+    }
+    if (S.removed[ev.id] && String(S.removed[ev.id]) >= ev.at) return;
+    delete S.removed[ev.id];
+    S.added.push({ id: ev.id, text: text, section: section, at: ev.at });
   }
   function applyEvent(ev) {
-    // A refresh ask is for the box that rebuilds the snapshot. It is not a check-off.
+    // Refresh is not a check-off. Add and remove update David's own list, not done-state.
     if (!ev || ev.type === "refresh") return;
+    if (ev.type === "add" || ev.type === "remove") {
+      if (!userEventOk(ev)) return;
+      if (ev.type === "add") upsertAdded(ev);
+      else if (!S.added.some(function (a) { return a.id === ev.id && String(a.at) > ev.at; })) {
+        S.added = S.added.filter(function (a) { return a.id !== ev.id; });
+        if (!S.removed[ev.id] || String(S.removed[ev.id]) < ev.at) S.removed[ev.id] = ev.at;
+      }
+      return;
+    }
     if (ev.type !== "todo" && ev.type !== "inbox") return;
     if (typeof ev.id !== "string" || !ev.id) return;
     if (typeof ev.done !== "boolean") return;
@@ -354,6 +476,7 @@
   }
   function prune() {
     if (!S.data) return;
+    reconcileMine();
     var todos = {};
     allTodos().forEach(function (t) { todos[t.id] = t; });
     var inbox = {};
@@ -370,11 +493,24 @@
     });
   }
   function enqueue(ev) {
-    S.overrides[ev.id] = { type: ev.type, id: ev.id, text: ev.text, done: ev.done, at: ev.at };
-    S.queue = S.queue.filter(function (q) { return q.id !== ev.id; });
+    if ((ev.type === "add" || ev.type === "remove") && !userEventOk(ev)) return;
+    if (ev.type === "todo" || ev.type === "inbox") {
+      S.overrides[ev.id] = { type: ev.type, id: ev.id, text: ev.text, done: ev.done, at: ev.at };
+    }
+    var prev = null;
+    S.queue.forEach(function (q) { if (q.id === ev.id && q.type === ev.type) prev = q; });
+    if (prev && (ev.type === "add" || ev.type === "remove") && String(prev.at || "") >= String(ev.at || "")) return;
+    S.queue = S.queue.filter(function (q) { return !(q.id === ev.id && q.type === ev.type); });
     S.queue.push(ev);
     saveState();
     flushQueue();
+  }
+  function ntfyBody(ev) {
+    if (ev.type === "add") {
+      return { type: "add", id: ev.id, text: String(ev.text || "").trim(), section: normalizeSection(ev.section), at: ev.at };
+    }
+    if (ev.type === "remove") return { type: "remove", id: ev.id, at: ev.at };
+    return { type: ev.type, id: ev.id, text: ev.text || "", done: !!ev.done, at: ev.at };
   }
 
   /* ---------- links ---------- */
@@ -503,9 +639,8 @@
       var chain = Promise.resolve();
       batch.forEach(function (ev) {
         chain = chain.then(function () {
-          return BenjiCrypto.encryptJson(S.passcode, {
-            type: ev.type, id: ev.id, text: ev.text, done: ev.done, at: ev.at,
-          }).then(function (env) {
+          if ((ev.type === "add" || ev.type === "remove") && !userEventOk(ev)) return null;
+          return BenjiCrypto.encryptJson(S.passcode, ntfyBody(ev)).then(function (env) {
             return fetchTimeout("https://ntfy.sh/" + topic, {
               method: "POST",
               cache: "no-store",
@@ -648,7 +783,7 @@
       if (!plain || !refreshTimer) return;
       var next = plain.UPDATED ? String(plain.UPDATED) : "";
       if (next && next !== refreshBaseline) {
-        S.data = plain;
+        adoptData(plain);
         prune();
         saveState();
         reseedMilestones();
@@ -697,13 +832,13 @@
       return S.demo ? fetchNamed("data.sample.json") : fetchNamed("data.enc.json");
     }).then(function (payload) {
       if (S.demo) {
-        S.data = payload;
+        adoptData(payload);
         dataOk = true;
         return null;
       }
       return BenjiCrypto.decryptJson(S.passcode, payload).then(function (plain) {
         if (!plain) throw new Error("decrypt");
-        S.data = plain;
+        adoptData(plain);
         dataOk = true;
       });
     }).then(function () {
@@ -940,7 +1075,7 @@
         return;
       }
       S.passcode = pw;
-      S.data = data;
+      adoptData(data);
       prune();
       saveState();
       var face = loadFace();
@@ -1026,6 +1161,56 @@
 
   /* ---------- interactions ---------- */
 
+  function submitAdd(e) {
+    if (e) e.preventDefault();
+    var input = document.getElementById("add-text");
+    var text = (input ? input.value : S.addDraft || "").replace(/\s+/g, " ").trim();
+    if (!text) {
+      if (input) input.focus();
+      return;
+    }
+    if (text.length > 240) text = text.slice(0, 240);
+    var picked = document.getElementById("add-section");
+    var names = sectionNames();
+    var section = picked ? picked.value : S.addSection;
+    section = normalizeSection(section);
+    var item = {
+      id: "u-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 8),
+      text: text,
+      section: section,
+      at: nowIso(),
+    };
+    S.added.push(item);
+    delete S.removed[item.id];
+    S.addDraft = "";
+    S.addOpen = false;
+    S.freshId = item.id;
+    S.groupOpen[section] = true;
+    if (S.demo) saveState();
+    else enqueue({ type: "add", id: item.id, text: item.text, section: item.section, at: item.at });
+    render();
+    setTimeout(function () {
+      if (S.freshId === item.id) {
+        S.freshId = null;
+        if (S.screen === "app") render();
+      }
+    }, 400);
+  }
+  function removeMine(item) {
+    var queuedAdd = (S.queue || []).some(function (q) { return q.type === "add" && q.id === item.id; });
+    var published = !!dataTodoIds()[item.id];
+    S.queue = S.queue.filter(function (q) { return q.id !== item.id; });
+    S.added = S.added.filter(function (a) { return a.id !== item.id; });
+    delete S.overrides[item.id];
+    if (queuedAdd && !published) delete S.removed[item.id];
+    else S.removed[item.id] = nowIso();
+    if (!S.demo && !(queuedAdd && !published) && userEventOk({ type: "remove", id: item.id, at: S.removed[item.id] })) {
+      S.queue.push({ type: "remove", id: item.id, at: S.removed[item.id] });
+    }
+    saveState();
+    if (!S.demo) flushQueue();
+    render();
+  }
   function toggleTodo(item) {
     var cur = isDone(item);
     var next = !cur;
@@ -1076,6 +1261,11 @@
     document.body.dataset.screen = S.screen;
     root.replaceChildren(build());
     if (S.screen === "app") window.scrollTo(0, y);
+    if (S.addFocus) {
+      S.addFocus = false;
+      var addInput = document.getElementById("add-text");
+      if (addInput) addInput.focus();
+    }
     S.painted = true;
   }
   function build() {
@@ -1331,6 +1521,7 @@
     var todos = allTodos();
     var open = todos.filter(function (t) { return !isDone(t); }).length;
     nodes.push(section("To-dos", open + " open"));
+    nodes.push(addTodoControl());
     nodes.push(el("div", { class: "hint", text: "Tap the circle to check one off. Finished items move to Done at the bottom of each group." }));
     var by = [];
     todos.forEach(function (item) {
@@ -1408,7 +1599,7 @@
     var body = el("div", { class: "in" });
     openItems.forEach(function (it, i) {
       var out = !!S.leaving[it.id];
-      var wrap = el("div", { class: out ? "leave" : "" });
+      var wrap = el("div", { class: (out ? "leave" : "") + (S.freshId === it.id ? " in" : "") });
       wrap.append(todoRow(it, isDone(it), i === 0));
       body.append(wrap);
     });
@@ -1453,8 +1644,10 @@
     var copy = el("span", { class: "todo-copy" }, [
       el("span", { class: "todo-text" + (on ? " on" : ""), text: it.text }),
     ]);
-    if (it.waiting || it.meta) {
+    if (it.mine || it.waiting || it.meta) {
       var meta = el("span", { class: "todo-meta" });
+      if (it.mine) meta.append(el("span", { class: "mine-mark", text: "Added by you" }));
+      if (it.mine && (it.waiting || it.meta)) meta.append(el("span", { "aria-hidden": "true", text: "·" }));
       if (it.waiting) meta.append(el("span", { class: "wait" + (on ? " on" : ""), text: "Waiting on you" }));
       if (it.waiting && it.meta) meta.append(el("span", { "aria-hidden": "true", text: "·" }));
       if (it.meta) meta.append(el("span", { text: it.meta }));
@@ -1475,6 +1668,14 @@
     }, mainKids);
     var row = el("div", { class: "todo", "data-id": it.id });
     row.append(check, main);
+    if (it.mine) {
+      row.append(el("button", {
+        class: "todo-x press",
+        type: "button",
+        "aria-label": "Remove " + it.text,
+        onclick: function () { removeMine(it); },
+      }, [el("span", { "aria-hidden": "true", text: "×" })]));
+    }
     box.append(row);
     if (expanded && it.src) {
       var pill = linkEl(it.src.href, it.src.label, "pill press");
@@ -1483,6 +1684,64 @@
     return box;
   }
 
+  function addTodoControl() {
+    if (!S.addOpen) {
+      return el("button", {
+        class: "add-todo press",
+        id: "add-todo",
+        type: "button",
+        onclick: function () {
+          var names = sectionNames();
+          if (SECTIONS.indexOf(S.addSection) < 0) S.addSection = "Personal";
+          S.addOpen = true;
+          S.addFocus = true;
+          render();
+        },
+      }, [el("span", { text: "Add a to-do" })]);
+    }
+    var names = sectionNames();
+    if (SECTIONS.indexOf(S.addSection) < 0) S.addSection = "Personal";
+    var select = el("select", {
+      id: "add-section",
+      "aria-label": "Section",
+      onchange: function (e) { S.addSection = e.target.value; },
+    });
+    names.forEach(function (name) {
+      var opt = el("option", { value: name, text: name });
+      if (name === S.addSection) opt.setAttribute("selected", "selected");
+      select.append(opt);
+    });
+    return el("form", { class: "add-sheet", id: "add-form", onsubmit: submitAdd }, [
+      el("label", { class: "add-label", for: "add-text", text: "New to-do" }),
+      el("input", {
+        id: "add-text",
+        type: "text",
+        enterkeyhint: "done",
+        autocomplete: "off",
+        autocapitalize: "sentences",
+        maxlength: "240",
+        placeholder: "What needs doing?",
+        "aria-label": "To-do",
+        value: S.addDraft || "",
+        oninput: function (e) { S.addDraft = e.target.value; },
+      }),
+      el("label", { class: "add-label", for: "add-section", text: "Section" }),
+      select,
+      el("div", { class: "add-actions" }, [
+        el("button", {
+          class: "text-btn press",
+          type: "button",
+          text: "Cancel",
+          onclick: function () {
+            S.addOpen = false;
+            S.addDraft = "";
+            render();
+          },
+        }),
+        el("button", { class: "btn press", id: "add-submit", type: "submit", text: "Add" }),
+      ]),
+    ]);
+  }
   function inboxTab() {
     var needs = allInbox().filter(function (i) { return i.needs && !inboxHidden(i); });
     var fyi = allInbox().filter(function (i) { return !i.needs && !inboxHidden(i); });
@@ -1892,6 +2151,7 @@
     window.addEventListener("online", function () { if (S.passcode) flushQueue(); });
     document.addEventListener("keydown", function (e) {
       if (e.key === "Escape" && S.settings) { S.settings = false; render(); }
+      else if (e.key === "Escape" && S.addOpen) { S.addOpen = false; S.addDraft = ""; render(); }
     });
     setInterval(function () {
       if (S.screen !== "app" || !S.data) return;
@@ -1912,7 +2172,7 @@
     faceAvailable().then(function (ok) { faceOk = ok; });
     if (S.demo) {
       fetchNamed("data.sample.json").then(function (data) {
-        S.data = data;
+        adoptData(data);
         prune();
         showApp();
       }).catch(function () {

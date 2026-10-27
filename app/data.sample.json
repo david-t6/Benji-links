@@ -82,6 +82,12 @@
       "name": "Personal",
       "waiting": [],
       "todo": [
+        {
+          "id": "u-samplemine-demo1",
+          "text": "Example to-do you added",
+          "section": "Personal",
+          "mine": true
+        },
         { "text": "Request roommates for utilities (example only)", "meta": "$10 each" },
         {
           "text": "Demo order on hold",

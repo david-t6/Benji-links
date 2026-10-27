@@ -252,6 +252,67 @@ h1 {
 
 .hint { font-size: 14px; line-height: 19px; color: #6B7076; }
 
+.add-todo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 52px;
+  margin: 2px 0 8px;
+  color: #00C805;
+  font-size: 17px;
+  font-weight: 650;
+  text-align: left;
+}
+.add-todo::before {
+  content: "+";
+  font-size: 22px;
+  font-weight: 500;
+  line-height: 1;
+}
+.add-sheet {
+  margin: 4px 0 16px;
+  padding: 4px 14px 12px;
+  background: #F4F5F6;
+  border-radius: 16px;
+}
+.add-label {
+  display: block;
+  margin: 12px 0 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #6B7076;
+}
+.add-sheet input,
+.add-sheet select {
+  display: block;
+  width: 100%;
+  min-height: 48px;
+  border: none;
+  border-radius: 12px;
+  background: #FFFFFF;
+  color: #111214;
+  font: inherit;
+  font-size: 17px;
+  padding: 0 14px;
+}
+.add-actions { display: flex; gap: 8px; align-items: center; }
+.add-actions .btn,
+.add-actions .text-btn { flex: 1; margin-top: 12px; }
+.mine-mark { font-weight: 600; color: #6B7076; }
+.todo-x {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  margin: 6px 0;
+  color: #A2A7AD;
+  font-size: 22px;
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
 .sched {
   display: flex;
   align-items: center;

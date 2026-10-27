@@ -25,7 +25,7 @@ The file on disk is an encrypted envelope (below). After decryption the plaintex
 | `DAY_ISO` | `YYYY-MM-DD` for the snapshot. The Now marker only shows when the phone's local date matches. |
 | `DATE_LABEL` | Heading date, such as `"Tuesday, October 27"`. |
 | `schedule` | `{ start, end, title }`. Hours are decimals (`9.5` is 9:30), sorted by start. |
-| `groups` | `{ name, waiting, todo }`. Names used by the page: Church, Weekday Coffee, Grace & Growth, Personal. A task is `{ text, meta?, done?, src? }`. `src` is `{ label, href }` (`Open email`, `Open text`, `Open event`, `Open site`). `waiting` items start unchecked. `todo` items may set `done: true`. Empty groups are hidden. |
+| `groups` | `{ name, waiting, todo }`. Names used by the page: Church, Weekday Coffee, Grace & Growth, Personal. A task is `{ text, meta?, done?, src? }`. `src` is `{ label, href }` (`Open email`, `Open text`, `Open event`, `Open site`). `waiting` items start unchecked. `todo` items may set `done: true`. A to-do David added in the app is a normal `todo` entry with `id`, `text`, `section`, and `mine: true` (below). Empty groups are hidden. |
 | `needsReply`, `fyi` | `{ lead, title, meta, detail, sms?, group? }`. `lead` is `Text`, `Church`, `Cafe`, or `Personal`. `meta` is the time on the right. `detail` is a summary, optionally followed by `"Next: …"`. Text rows set `sms` to `+1…`. Group chats set `group: true`. |
 | `gmail` | Map of lead to `{ name, email }` for the inbox Gmail buttons. |
 | `purchases` | `{ lead, title, detail, meta, pending? }`, newest first. `lead` is `MM/DD`. `detail` is the account (last 4 only). `meta` is the amount. |
@@ -98,7 +98,7 @@ Turning the Settings switch off deletes the face record, writes the passcode bac
 
 Taps are stored in `localStorage` key `benjis-day:v2` as `{ overrides, queue }` so they survive a reload.
 
-- To-do id: `group|kind|text`. `kind` is `w` for a waiting item and `t` for a to-do. Example: `Church|w|Ask Riley about Sunday start`.
+- To-do id: `group|kind|text` when the task has no id of its own. `kind` is `w` for a waiting item and `t` for a to-do. Example: `Church|t|Ask Riley about Sunday start`. A task that already has `id` (David’s own to-dos, `u-…`) keeps that id, including for check-offs. Waiting items always use `group|w|text`.
 - Inbox id: `title|meta|summary`, where summary is the detail before `Next:`.
 
 An event is plaintext JSON, then encrypted with the envelope above:
@@ -109,13 +109,35 @@ An event is plaintext JSON, then encrypted with the envelope above:
 
 `type` is `todo` or `inbox`. `at` is an ISO-8601 UTC timestamp. `done` is boolean.
 
+Adding a to-do in the app posts:
+
+```json
+{"type":"add","id":"u-m5k2p0-ab12cd","text":"Buy stamps","section":"Personal","at":"2026-10-27T15:04:00.000Z"}
+```
+
+`id` is `u-` plus the current time in base 36, a hyphen, and a short random base-36 string. The section picker is exactly Church, Weekday Coffee, Grace & Growth, and Personal, and it starts on Personal. A missing or unknown section is Personal. The box accepts an add only when `id` starts with `u-` and `text` is non-empty, and a remove only when `id` starts with `u-`. A second add for the same `id` with a newer `at` replaces `text` and `section`. Removing that to-do posts:
+
+```json
+{"type":"remove","id":"u-m5k2p0-ab12cd","at":"2026-10-27T15:10:00.000Z"}
+```
+
+Both use the same encrypted envelope. The app does not treat `add` or `remove` as check-offs. In `?demo=1` these stay on the phone and are not posted.
+
+When the box has accepted an add, it publishes the task in `groups[].todo` for that section:
+
+```json
+{"id":"u-m5k2p0-ab12cd","text":"Buy stamps","section":"Personal","mine":true}
+```
+
+`id` is the same `u-…` value. `section` is the group name. `mine: true` is what shows the “Added by you” line. After a check-off is published, the same object also has `done: true`. Once that `id` is in the snapshot, the phone drops its local copy. Until then the phone keeps the task in `localStorage` (`benjis-day:v2`, field `added`). Check-off events for these rows use the `u-…` id. Other to-dos still use `group|t|text`.
+
 A Sync tap or a pull-to-refresh also posts one extra event, after the queued check-offs:
 
 ```json
 {"type":"refresh","id":"refresh","at":"2026-10-27T15:04:00.000Z"}
 ```
 
-That asks the box for a new pass over email, texts, and calendar. It uses the same encrypted envelope. The app sends at most one of these every 2 minutes, and never on the automatic sync that runs when the app opens or comes back to the foreground. When the app reads ntfy, it ignores `type: "refresh"` so it is not applied as a check-off. The box should do the same.
+That asks the box for a new pass over email, texts, and calendar. It uses the same encrypted envelope. The app sends at most one of these every 2 minutes, and never on the automatic sync that runs when the app opens or comes back to the foreground. When the app reads ntfy, it ignores `type: "refresh"`, `type: "add"`, and `type: "remove"` so none of those are applied as a check-off. The box should ignore `refresh` for check-offs too, and should treat `add` and `remove` as changes to David’s own to-dos.
 
 The ntfy topic is `benji-` plus the first 24 hex characters of SHA-256 of the UTF-8 string `benji-topic:` concatenated with the passcode. The app POSTs the envelope as `text/plain` to `https://ntfy.sh/<topic>`. A failed check-off stays in `queue` and is retried on the next sync, when the phone comes online, and when a later tap flushes the queue. A refresh event is not queued. The 2-minute debounce starts only after a successful post, so a failed refresh can be tried again on the next Sync tap.
 
