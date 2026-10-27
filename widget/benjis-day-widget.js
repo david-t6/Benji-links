@@ -8,8 +8,10 @@ const APP_URL = "https://david-t6.github.io/Benji-links/app/";
 const KEYCHAIN_KEY = "benjis-day-passcode";
 const CACHE_NAME = "benjis-day-cache.json";
 
-const PAPER = new Color("#F6F1E6");
-const SUN = new Color("#E6A817");
+const PAPER = new Color("#FEFAF0");
+const SUN = new Color("#FFBF01");
+const ICON_URL = APP_URL + "icon-180.png?v=6";
+const ICON_FILE = "benjis-day-icon-v6.png";
 const INK = new Color("#2C261C");
 const SUB = new Color("#7A705F");
 const TRACK = new Color("#E4DCCB");
@@ -173,6 +175,21 @@ function nextEvent(data) {
   return { title: String(hit.title || "Next event"), when: live ? "Now" : fmtHour(hit.start), quiet: false };
 }
 
+async function appIcon() {
+  try {
+    const fm = FileManager.local();
+    const path = fm.joinPath(fm.documentsDirectory(), ICON_FILE);
+    if (!fm.fileExists(path)) {
+      const req = new Request(ICON_URL);
+      req.timeoutInterval = 15;
+      fm.write(path, await req.load());
+    }
+    return Image.fromFile(path);
+  } catch (err) {
+    return null;
+  }
+}
+
 function baseWidget() {
   const widget = new ListWidget();
   widget.backgroundColor = PAPER;
@@ -182,7 +199,16 @@ function baseWidget() {
   return widget;
 }
 
-function addRule(widget) {
+function addMark(widget, image) {
+  if (image) {
+    const mark = widget.addImage(image);
+    const family = config.widgetFamily || "medium";
+    const side = family === "small" ? 22 : 26;
+    mark.imageSize = new Size(side, side);
+    mark.centerAlignImage();
+    widget.addSpacer(8);
+    return;
+  }
   const rule = widget.addStack();
   rule.backgroundColor = SUN;
   rule.cornerRadius = 2;
@@ -229,9 +255,9 @@ function addCount(widget, open, done, big) {
   addBar(widget, total ? done / total : 0);
 }
 
-function paintLocked() {
+function paintLocked(image) {
   const widget = baseWidget();
-  addRule(widget);
+  addMark(widget, image);
   const title = widget.addText("Benji's Day");
   title.font = Font.boldSystemFont(16);
   title.textColor = INK;
@@ -242,12 +268,12 @@ function paintLocked() {
   return widget;
 }
 
-function paint(data) {
+function paint(data, image) {
   const family = config.widgetFamily || "medium";
   const counts = taskCounts(data);
   const event = nextEvent(data);
   const widget = baseWidget();
-  addRule(widget);
+  addMark(widget, image);
 
   if (family === "small") {
     addCount(widget, counts.open.length, counts.done, false);
@@ -334,14 +360,15 @@ function paint(data) {
 }
 
 async function run() {
+  const image = await appIcon();
   const pass = await passcode();
   if (!pass) {
     const cached = readCache();
-    return cached ? paint(cached) : paintLocked();
+    return cached ? paint(cached, image) : paintLocked(image);
   }
   const data = await loadDay(pass);
-  if (!data) return paintLocked();
-  return paint(data);
+  if (!data) return paintLocked(image);
+  return paint(data, image);
 }
 
 const widget = await run();

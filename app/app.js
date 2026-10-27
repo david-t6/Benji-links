@@ -1442,6 +1442,7 @@
   function header() {
     return el("header", { class: "head" }, [
       el("div", { class: "head-top" }, [
+        el("img", { class: "brand", src: "icon-180.png?v=6", alt: "" }),
         el("h1", { text: "Benji's Day" }),
         el("button", {
           class: "icon-btn press",

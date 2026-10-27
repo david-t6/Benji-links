@@ -164,7 +164,7 @@ These run in the top-level page, not through the hop page.
 
 ## Shell
 
-`manifest.webmanifest` sets `name`, `short_name`, `display: standalone`, `start_url` and `scope` of `./`, and a white theme. Icons are `icon-180.png`, `icon-192.png`, and `icon-512.png` (green rounded square, white check), plus `icon-512-maskable.png` for installers that crop to a circle or squircle. `sw.js` has a fetch handler, precaches the shell, and uses network-first for `data.enc.json` and `data.sample.json`.
+`manifest.webmanifest` sets `name`, `short_name`, `display: standalone`, `start_url` and `scope` of `./`, and an off-white theme (`#FEFAF0`). The icon is a golden sun with a white check on that same off-white. `icon-1024.png` is the source. The page uses `icon-180.png` as the Apple touch icon, `icon-192.png` and `icon-512.png` (`purpose: any`) in the manifest, and `favicon-32.png` / `favicon-16.png` in the browser tab. `icon-512-maskable.png` is the same artwork at 80% size, centered, so a circle or squircle crop keeps the rays. Icon links carry `?v=6`. `sw.js` precaches the shell as `benji-day-shell-v6` and uses network-first for `data.enc.json` and `data.sample.json`.
 
 On a Mac, Safari 17 and later can use File > Add to Dock. Chrome and Edge can use Install. Both read this manifest. At 900px and wider the page is two columns: to-dos on the left, calendar, inbox, and spending on the right. Enter opens a new to-do. R syncs.
 

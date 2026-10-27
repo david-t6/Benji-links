@@ -2,7 +2,7 @@
 
 A Scriptable widget for the iPhone Home Screen. It reads the same encrypted snapshot as the app, shows how many to-dos are open and done, the next thing on the calendar, and (on the large widget) the next few open to-dos. A tap opens [Benji's Day](https://david-t6.github.io/Benji-links/app/).
 
-The passcode is asked for once, when you run the script inside Scriptable, and is stored in the iOS Keychain. It is not in this file.
+The passcode is asked for once, when you run the script inside Scriptable, and is stored in the iOS Keychain. It is not in this file. The mark at the top is the app icon, a golden sun with a white check, saved on the phone after the first load.
 
 ## Install
 

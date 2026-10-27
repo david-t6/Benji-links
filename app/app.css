@@ -80,6 +80,8 @@ h1 {
 
 .head-top h1 { flex: 1; min-width: 0; }
 
+.brand { display: none; width: 32px; height: 32px; flex-shrink: 0; }
+
 .icon-btn {
   width: 44px;
   height: 44px;
@@ -841,6 +843,7 @@ body[data-tab="money"] .panel-money { display: block; }
   .col { max-width: 1120px; }
   .tabs-wrap { display: none; }
   .desk-keys { display: block; }
+  .brand { display: block; }
   .panels {
     display: grid;
     grid-template-columns: minmax(0, 1.4fr) minmax(300px, 0.82fr);
