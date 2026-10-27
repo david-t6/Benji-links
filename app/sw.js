@@ -1,5 +1,5 @@
 /* Shell cache. data.enc.json and data.sample.json are network-first. */
-var CACHE = "benji-day-shell-v6";
+var CACHE = "benji-day-shell-v7";
 var SHELL = [
   "./",
   "./index.html",

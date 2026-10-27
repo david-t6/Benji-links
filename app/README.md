@@ -9,7 +9,7 @@ The page is always light: white background, `color-scheme: light`, and a white t
 1. Open [https://david-t6.github.io/Benji-links/app/](https://david-t6.github.io/Benji-links/app/) in Safari on the iPhone.
 2. Tap Share.
 3. Tap Add to Home Screen.
-4. Open Benji's Day, enter the passcode, and leave "Use Face ID to unlock" on if you want Face ID next time.
+4. Open Benji's Day from the home screen, enter the passcode, and leave **Remember on this device** checked. Next time that icon opens straight to the day. The home-screen app keeps its own storage, separate from Safari, so unlock once in the icon you actually use.
 
 `?demo=1` loads `data.sample.json` instead. That file is fake example data and is not encrypted, so the demo skips the passcode and Face ID.
 
@@ -56,9 +56,17 @@ The same envelope wraps each check-off event before it is posted to ntfy. A wron
 
 The passcode is not sent to ntfy. It is only used as the PBKDF2 input and in the topic hash below.
 
+## Remember on this device
+
+The passcode screen has **Remember on this device**, checked by default. After a successful unlock the app generates a non-extractable AES-GCM `CryptoKey` and uses it to wrap the passcode (`wrapKey` of the passcode bytes). The key and the wrapped passcode are stored in IndexedDB (`benjis-day` / `device` / `remember`). The next launch unwraps the passcode and decrypts with no lock screen and no Face ID prompt. ntfy topics and check-off, add, and refresh events still use that passcode.
+
+If IndexedDB cannot store the key, the passcode is kept in `localStorage` under `benjis-day:passcode` instead. A home-screen web app does not share either store with Safari.
+
+A wrong passcode, or a snapshot that no longer opens with the saved one, clears the remembered credential and shows the passcode screen. **Lock / forget this device** in Settings does the same on purpose. Unchecking Remember opens the day for this visit only.
+
 ## Face ID
 
-After the passcode decrypts for the first time, the app offers **Use Face ID to unlock**. The switch starts on. Continue creates a passkey. Not now (switch off, then Continue) stores the passcode and does not ask again until Settings.
+Face ID is not part of opening the app. The code that creates a passkey is still there and is not prompted on launch. Settings can still turn it on. It is not required for Remember.
 
 The passkey is WebAuthn:
 
@@ -69,7 +77,7 @@ The passkey is WebAuthn:
 - ES256 and RS256. Attestation is `none`.
 - User id is random. Display name is Benji.
 
-The unlock screen has a large **Unlock with Face ID** button, because iOS often requires a tap before it will show Face ID. **Use passcode instead** is always there. On open, the app also calls `navigator.credentials.get` immediately, before any other await, so a home-screen tap can count as the gesture. If the browser blocks that call, the button stays and no error is shown until a tap fails.
+Opening the app does not call `navigator.credentials.get`. If a passkey is already saved, the passcode screen can offer **Use Face ID instead**. That button is the only launch-adjacent Face ID control, and it waits for a tap.
 
 Which mode is stored is decided by the authenticator at enrollment, and written to `localStorage` key `benjis-day:face` as `mode`.
 
@@ -82,7 +90,7 @@ Used when registration, or the follow-up `get` in the same setup, returns a 32-b
 - HKDF-SHA256, salt UTF-8 `benji-day:face-id:hkdf-salt:v1`, info UTF-8 `benji-day:passcode-wrap:v1`, 256-bit AES-GCM key.
 - A fresh 12-byte iv. Ciphertext includes the GCM tag, standard base64.
 - Stored record: `{ "v": 1, "mode": "prf", "credentialId": "<base64 rawId>", "wrapped": { "v": 1, "iv": "<base64>", "ct": "<base64>" } }`.
-- The plaintext passcode is removed from `localStorage`. On open, Face ID evaluates the PRF, unwraps the passcode, then decrypts `data.enc.json`.
+- The plaintext passcode is removed from `localStorage`. Face ID, if you tap it, evaluates the PRF, unwraps the passcode, then decrypts `data.enc.json`. Remember on this device does not need that step.
 
 Settings says: "Your passcode is locked behind Face ID and isn't stored on this phone."
 
@@ -164,7 +172,7 @@ These run in the top-level page, not through the hop page.
 
 ## Shell
 
-`manifest.webmanifest` sets `name`, `short_name`, `display: standalone`, `start_url` and `scope` of `./`, and an off-white theme (`#FEFAF0`). The icon is a golden sun with a white check on that same off-white. `icon-1024.png` is the source. The page uses `icon-180.png` as the Apple touch icon, `icon-192.png` and `icon-512.png` (`purpose: any`) in the manifest, and `favicon-32.png` / `favicon-16.png` in the browser tab. `icon-512-maskable.png` is the same artwork at 80% size, centered, so a circle or squircle crop keeps the rays. Icon links carry `?v=6`. `sw.js` precaches the shell as `benji-day-shell-v6` and uses network-first for `data.enc.json` and `data.sample.json`.
+`manifest.webmanifest` sets `name`, `short_name`, `display: standalone`, `start_url` and `scope` of `./`, and an off-white theme (`#FEFAF0`). The icon is a golden sun with a white check on that same off-white. `icon-1024.png` is the source. The page uses `icon-180.png` as the Apple touch icon, `icon-192.png` and `icon-512.png` (`purpose: any`) in the manifest, and `favicon-32.png` / `favicon-16.png` in the browser tab. `icon-512-maskable.png` is the same artwork at 80% size, centered, so a circle or squircle crop keeps the rays. Icon links carry `?v=7`. `sw.js` precaches the shell as `benji-day-shell-v7` and uses network-first for `data.enc.json` and `data.sample.json`.
 
 On a Mac, Safari 17 and later can use File > Add to Dock. Chrome and Edge can use Install. Both read this manifest. At 900px and wider the page is two columns: to-dos on the left, calendar, inbox, and spending on the right. Enter opens a new to-do. R syncs.
 

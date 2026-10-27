@@ -645,6 +645,26 @@ h1 {
   font-size: 17px;
   padding: 0 16px;
 }
+.remember {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 14px;
+  font-size: 15px;
+  line-height: 20px;
+  color: #111214;
+}
+.remember input {
+  width: 22px;
+  height: 22px;
+  min-height: 22px;
+  margin: 0;
+  padding: 0;
+  border-radius: 6px;
+  accent-color: #00C805;
+  flex: none;
+  background: #FFFFFF;
+}
 .btn {
   display: flex;
   align-items: center;

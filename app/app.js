@@ -56,6 +56,7 @@
     offerOn: true,
     offerBusy: false,
     offerError: "",
+    remember: true,
     lastPct: {},
   };
 
@@ -891,6 +892,124 @@
     });
   }
 
+  /* ---------- Remember on this device ----------
+   * A home-screen web app keeps its own IndexedDB and localStorage, separate
+   * from Safari. The wrapping key is created in whichever one David opens.
+   * The key is a non-extractable AES-GCM CryptoKey. It wraps the passcode
+   * (as an HMAC key, so any length works) and both live in IndexedDB.
+   * If that store rejects the key, the passcode falls back to localStorage.
+   */
+
+  var REMEMBER_DB = "benjis-day";
+  var REMEMBER_STORE = "device";
+  var REMEMBER_ID = "remember";
+
+  function openRememberDb() {
+    return new Promise(function (resolve, reject) {
+      if (!window.indexedDB) { reject(new Error("no-idb")); return; }
+      var req = indexedDB.open(REMEMBER_DB, 1);
+      req.onupgradeneeded = function () {
+        var db = req.result;
+        if (!db.objectStoreNames.contains(REMEMBER_STORE)) db.createObjectStore(REMEMBER_STORE);
+      };
+      req.onsuccess = function () { resolve(req.result); };
+      req.onerror = function () { reject(req.error || new Error("idb")); };
+    });
+  }
+  function idbDone(db, tx, resolve, reject) {
+    tx.oncomplete = function () { try { db.close(); } catch (e) {} resolve(); };
+    tx.onerror = function () { try { db.close(); } catch (e) {} reject(tx.error || new Error("idb")); };
+    tx.onabort = function () { try { db.close(); } catch (e) {} reject(tx.error || new Error("idb")); };
+  }
+  function idbPut(value) {
+    return openRememberDb().then(function (db) {
+      return new Promise(function (resolve, reject) {
+        var tx = db.transaction(REMEMBER_STORE, "readwrite");
+        tx.objectStore(REMEMBER_STORE).put(value, REMEMBER_ID);
+        idbDone(db, tx, resolve, reject);
+      });
+    });
+  }
+  function idbGet() {
+    return openRememberDb().then(function (db) {
+      return new Promise(function (resolve, reject) {
+        var tx = db.transaction(REMEMBER_STORE, "readonly");
+        var req = tx.objectStore(REMEMBER_STORE).get(REMEMBER_ID);
+        req.onsuccess = function () {
+          var value = req.result || null;
+          try { db.close(); } catch (e) {}
+          resolve(value);
+        };
+        req.onerror = function () {
+          try { db.close(); } catch (e) {}
+          reject(req.error || new Error("idb"));
+        };
+      });
+    });
+  }
+  function idbDelete() {
+    return openRememberDb().then(function (db) {
+      return new Promise(function (resolve, reject) {
+        var tx = db.transaction(REMEMBER_STORE, "readwrite");
+        tx.objectStore(REMEMBER_STORE).delete(REMEMBER_ID);
+        idbDone(db, tx, resolve, reject);
+      });
+    }).catch(function () {});
+  }
+  function rememberPasscode(pw) {
+    var iv = crypto.getRandomValues(new Uint8Array(12));
+    var bytes = new TextEncoder().encode(String(pw));
+    return crypto.subtle.generateKey(
+      { name: "AES-GCM", length: 256 },
+      false,
+      ["wrapKey", "unwrapKey"]
+    ).then(function (key) {
+      return crypto.subtle.importKey("raw", bytes, { name: "HMAC", hash: "SHA-256" }, true, ["sign"]).then(function (passKey) {
+        return crypto.subtle.wrapKey("raw", passKey, key, { name: "AES-GCM", iv: iv }).then(function (wrapped) {
+          return idbPut({
+            v: 1,
+            key: key,
+            iv: BenjiCrypto.b64encode(iv),
+            ct: BenjiCrypto.b64encode(new Uint8Array(wrapped)),
+          });
+        });
+      });
+    }).then(function () {
+      try { localStorage.removeItem(PASS_KEY); } catch (e) {}
+    }).catch(function () {
+      try { localStorage.setItem(PASS_KEY, String(pw)); } catch (e) {}
+    });
+  }
+  function unwrapRemembered(rec) {
+    return crypto.subtle.unwrapKey(
+      "raw",
+      BenjiCrypto.b64decode(rec.ct),
+      rec.key,
+      { name: "AES-GCM", iv: BenjiCrypto.b64decode(rec.iv) },
+      { name: "HMAC", hash: "SHA-256" },
+      true,
+      ["sign"]
+    ).then(function (passKey) {
+      return crypto.subtle.exportKey("raw", passKey);
+    }).then(function (raw) {
+      var pw = new TextDecoder().decode(raw);
+      return pw || null;
+    });
+  }
+  function readRememberedPasscode() {
+    return idbGet().then(function (rec) {
+      if (!rec || rec.v !== 1 || !rec.key || !rec.iv || !rec.ct) return null;
+      return unwrapRemembered(rec).catch(function () { return null; });
+    }).catch(function () { return null; }).then(function (pw) {
+      if (pw) return pw;
+      try { return localStorage.getItem(PASS_KEY) || null; } catch (e) { return null; }
+    });
+  }
+  function forgetDevice() {
+    try { localStorage.removeItem(PASS_KEY); } catch (e) {}
+    return idbDelete();
+  }
+
   /* ---------- Face ID ---------- */
 
   function loadFace() {
@@ -1085,28 +1204,18 @@
     }
     return job.then(function (data) {
       if (!data) {
-        if (opts.auto) localStorage.removeItem(PASS_KEY);
-        renderPasscode({ error: "That passcode didn't work.", canFace: !!loadFace() });
-        return;
+        var cleared = opts.auto ? forgetDevice() : Promise.resolve();
+        return cleared.then(function () {
+          renderPasscode({ error: "That passcode didn't work.", canFace: !opts.auto && !!loadFace() });
+        });
       }
       S.passcode = pw;
       adoptData(data);
       prune();
       saveState();
-      var face = loadFace();
-      if (!face) {
-        localStorage.setItem(PASS_KEY, pw);
-        if (!opts.skipOffer && !S.demo && localStorage.getItem(OFFER_KEY) !== "skip") {
-          return faceAvailable().then(function (ok) {
-            faceOk = ok;
-            if (ok) { presentOffer(); return; }
-            showApp();
-          });
-        }
-      } else if (face.mode === "prf") {
-        localStorage.removeItem(PASS_KEY);
-      }
-      showApp();
+      var remember = opts.fromForm ? !!opts.remember : true;
+      var stored = remember ? rememberPasscode(pw) : forgetDevice();
+      return stored.then(function () { showApp(); });
     }).catch(function () {
       renderPasscode({ error: "Couldn't load today's data.", canFace: !!loadFace() || !!opts.fromFace });
     });
@@ -1157,14 +1266,11 @@
     S.settings = false;
     S.cheer = null;
     S.syncing = false;
-    if (loadFace()) {
-      faceGen++;
-      if (faceAbort) faceAbort.abort();
-      S.faceBusy = false;
-      S.faceError = "";
-      S.screen = "face";
-      render();
-    } else renderPasscode();
+    faceGen++;
+    if (faceAbort) faceAbort.abort();
+    S.faceBusy = false;
+    S.faceError = "";
+    forgetDevice().then(function () { renderPasscode(); });
   }
   function usePasscodeInstead() {
     faceGen++;
@@ -1324,6 +1430,15 @@
         enterkeyhint: "go",
         "aria-label": "Passcode",
       }),
+      el("label", { class: "remember" }, [
+        el("input", {
+          id: "remember",
+          type: "checkbox",
+          checked: S.remember ? "checked" : null,
+          onchange: function (e) { S.remember = !!e.target.checked; },
+        }),
+        el("span", { text: "Remember on this device" }),
+      ]),
       el("button", { class: "btn press", id: "continue", type: "submit", text: "Continue" }),
       el("p", { class: "err", text: S.passError || "" }),
     ];
@@ -1354,9 +1469,11 @@
       if (err) err.textContent = "Enter your passcode.";
       return;
     }
+    var box = document.getElementById("remember");
+    if (box) S.remember = !!box.checked;
     var btn = document.getElementById("continue");
     if (btn) { btn.disabled = true; btn.textContent = "Opening…"; }
-    unlockWithPasscode(pw, {});
+    unlockWithPasscode(pw, { fromForm: true, remember: S.remember });
   }
   function faceView() {
     var label = S.faceBusy && S.faceGesture ? "Waiting for Face ID…" : "Unlock with Face ID";
@@ -1442,7 +1559,7 @@
   function header() {
     return el("header", { class: "head" }, [
       el("div", { class: "head-top" }, [
-        el("img", { class: "brand", src: "icon-180.png?v=6", alt: "" }),
+        el("img", { class: "brand", src: "icon-180.png?v=7", alt: "" }),
         el("h1", { text: "Benji's Day" }),
         el("button", {
           class: "icon-btn press",
@@ -2056,7 +2173,7 @@
         id: "lock",
         type: "button",
         onclick: lockApp,
-      }, [el("span", { text: "Lock" })]));
+      }, [el("span", { text: "Lock / forget this device" })]));
     }
     rows.push(el("button", {
       class: "text-btn press",
@@ -2222,26 +2339,12 @@
       });
       return;
     }
-    var face = loadFace();
-    if (face && face.credentialId) {
-      if (face.mode === "prf") localStorage.removeItem(PASS_KEY);
-      S.screen = "face";
-      S.faceError = "";
-      render();
-      // A home-screen tap can still be a user gesture this early. Otherwise wait
-      // for the Unlock button so a blocked prompt cannot cover it.
-      if (navigator.userActivation && navigator.userActivation.isActive) startFaceGet(false);
-      return;
-    }
-    var stored = null;
-    try { stored = localStorage.getItem(PASS_KEY); } catch (e) { stored = null; }
-    if (stored) {
-      S.screen = "opening";
-      render();
-      unlockWithPasscode(stored, { auto: true });
-      return;
-    }
-    renderPasscode();
+    S.screen = "opening";
+    render();
+    readRememberedPasscode().then(function (pw) {
+      if (!pw) { renderPasscode(); return; }
+      unlockWithPasscode(pw, { auto: true });
+    });
   }
 
   boot();
