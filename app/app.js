@@ -542,6 +542,11 @@
     return "";
   }
   var GMAIL_APP = "googlegmail://";
+  function isIOS() {
+    var ua = navigator.userAgent || "";
+    if (/iPad|iPhone|iPod/.test(ua)) return true;
+    return navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1;
+  }
   function openNative(url) {
     window.location.href = url;
   }
@@ -567,7 +572,11 @@
     var sms = smsHref(href);
     if (sms) { openNative(sms); return; }
     var g = gmailParts(href);
-    if (g) { openNative(GMAIL_APP); return; }
+    if (g) {
+      if (isIOS()) openNative(GMAIL_APP);
+      else window.open(g.fallback, "_blank", "noopener");
+      return;
+    }
     var http = safeHttp(href);
     if (http) window.open(http, "_blank", "noopener");
   }
@@ -587,6 +596,12 @@
       return a;
     }
     if (g) {
+      if (!isIOS()) {
+        a.setAttribute("href", g.fallback);
+        a.setAttribute("target", "_blank");
+        a.setAttribute("rel", "noopener");
+        return a;
+      }
       a.setAttribute("href", GMAIL_APP);
       a.addEventListener("click", function (e) {
         e.preventDefault();
@@ -1259,6 +1274,7 @@
     var y = window.scrollY;
     var root = document.getElementById("app");
     document.body.dataset.screen = S.screen;
+    document.body.dataset.tab = S.tab || "";
     root.replaceChildren(build());
     if (S.screen === "app") window.scrollTo(0, y);
     if (S.addFocus) {
@@ -1406,11 +1422,12 @@
     var enter = S.enterTab !== S.tab;
     S.enterTab = S.tab;
     var colKids = [header(), ptrEl(), hero(), tabs()];
-    var panelKids = [];
-    if (S.tab === "todo") panelKids = todoTab();
-    else if (S.tab === "inbox") panelKids = inboxTab();
-    else panelKids = moneyTab();
-    colKids.push(el("div", { class: enter ? "in" : "" }, panelKids));
+    var panels = el("div", { class: "panels" + (enter ? " in" : "") });
+    panels.append(el("div", { id: "panel-cal", class: "panel panel-cal" }, [timeline()]));
+    panels.append(el("div", { id: "panel-todo", class: "panel panel-todo" }, todoTab()));
+    panels.append(el("div", { id: "panel-inbox", class: "panel panel-inbox" }, inboxTab()));
+    panels.append(el("div", { id: "panel-money", class: "panel panel-money" }, moneyTab()));
+    colKids.push(panels);
     var rootKids = [el("div", { class: "col" }, colKids)];
     if (S.settings) rootKids.push(settingsSheet());
     if (S.cheer) rootKids.push(celebrate());
@@ -1455,6 +1472,7 @@
         syncIcon(S.syncing, S.syncOk),
         el("span", { id: "sync-label", text: syncLabel() }),
       ]),
+      el("p", { class: "desk-keys", text: "Enter adds a to-do · R syncs" }),
     ]);
   }
   function hero() {
@@ -1469,7 +1487,7 @@
       el("div", { style: "margin-top:14px" }, [bar(pct, 5, "hero")]),
       el("div", { class: "stats" }, [
         stat(String(c.replies), "need a reply", "inbox"),
-        stat(String((S.data.schedule || []).length), "on the calendar", "todo"),
+        stat(String((S.data.schedule || []).length), "on the calendar", "cal"),
         stat(S.data.spend ? S.data.spend.total : "", "spent this week", "money"),
       ]),
       el("div", { class: "meta-line", text: (S.data.DATE_LABEL || "") + " · Updated " + (S.data.UPDATED || "") }),
@@ -1480,7 +1498,17 @@
       class: "stat press",
       type: "button",
       "aria-label": value + " " + label,
-      onclick: function () { S.tab = tab; render(); },
+      onclick: function () {
+        var wide = false;
+        try { wide = window.matchMedia("(min-width: 900px)").matches; } catch (err) { wide = false; }
+        if (wide && S.screen === "app") {
+          var node = document.getElementById(tab === "cal" ? "panel-cal" : tab === "inbox" ? "panel-inbox" : tab === "money" ? "panel-money" : "panel-todo");
+          if (node) node.scrollIntoView({ behavior: reducedMotion() ? "auto" : "smooth", block: "start" });
+          return;
+        }
+        S.tab = tab === "cal" ? "todo" : tab;
+        render();
+      },
     }, [el("b", { text: value }), el("span", { text: label })]);
   }
   function tabs() {
@@ -1517,7 +1545,7 @@
   }
 
   function todoTab() {
-    var nodes = [timeline()];
+    var nodes = [];
     var todos = allTodos();
     var open = todos.filter(function (t) { return !isDone(t); }).length;
     nodes.push(section("To-dos", open + " open"));
@@ -1684,19 +1712,20 @@
     return box;
   }
 
+  function openAdd() {
+    if (SECTIONS.indexOf(S.addSection) < 0) S.addSection = "Personal";
+    S.addOpen = true;
+    S.addFocus = true;
+    S.tab = "todo";
+    render();
+  }
   function addTodoControl() {
     if (!S.addOpen) {
       return el("button", {
         class: "add-todo press",
         id: "add-todo",
         type: "button",
-        onclick: function () {
-          var names = sectionNames();
-          if (SECTIONS.indexOf(S.addSection) < 0) S.addSection = "Personal";
-          S.addOpen = true;
-          S.addFocus = true;
-          render();
-        },
+        onclick: function () { openAdd(); },
       }, [el("span", { text: "Add a to-do" })]);
     }
     var names = sectionNames();
@@ -2150,8 +2179,18 @@
     });
     window.addEventListener("online", function () { if (S.passcode) flushQueue(); });
     document.addEventListener("keydown", function (e) {
-      if (e.key === "Escape" && S.settings) { S.settings = false; render(); }
-      else if (e.key === "Escape" && S.addOpen) { S.addOpen = false; S.addDraft = ""; render(); }
+      if (e.key === "Escape" && S.settings) { S.settings = false; render(); return; }
+      if (e.key === "Escape" && S.addOpen) { S.addOpen = false; S.addDraft = ""; render(); return; }
+      if (S.screen !== "app" || e.metaKey || e.ctrlKey || e.altKey || e.repeat) return;
+      var tag = e.target && e.target.tagName;
+      var typing = tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || (e.target && e.target.isContentEditable);
+      if (typing) return;
+      if (e.key === "Enter") {
+        e.preventDefault();
+        if (!S.addOpen) openAdd();
+        return;
+      }
+      if (e.key === "r" || e.key === "R") doSync({ refresh: true });
     });
     setInterval(function () {
       if (S.screen !== "app" || !S.data) return;

@@ -108,6 +108,8 @@ h1 {
 
 .sync-btn.ok, .sync-btn.ok svg { color: #00C805; }
 
+.desk-keys { display: none; margin: 0; font-size: 13px; color: #A2A7AD; }
+
 .press:active { transform: scale(0.97); opacity: 0.8; }
 .check-btn:active { transform: scale(0.88); opacity: 0.85; }
 
@@ -828,6 +830,40 @@ h1 {
 @keyframes rhLive { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
 @keyframes spin { to { transform: rotate(360deg); } }
 @keyframes syncPop { 0% { transform: scale(0.9); } 40% { transform: scale(1.08); } 100% { transform: scale(1); } }
+
+.panel-cal, .panel-todo, .panel-inbox, .panel-money { display: none; }
+body[data-tab="todo"] .panel-cal,
+body[data-tab="todo"] .panel-todo,
+body[data-tab="inbox"] .panel-inbox,
+body[data-tab="money"] .panel-money { display: block; }
+
+@media (min-width: 900px) {
+  .col { max-width: 1120px; }
+  .tabs-wrap { display: none; }
+  .desk-keys { display: block; }
+  .panels {
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(300px, 0.82fr);
+    column-gap: 56px;
+    align-items: start;
+  }
+  body[data-screen="app"] .panel-todo {
+    display: block;
+    grid-column: 1;
+    grid-row: 1 / span 3;
+    min-width: 0;
+  }
+  body[data-screen="app"] .panel-cal,
+  body[data-screen="app"] .panel-inbox,
+  body[data-screen="app"] .panel-money {
+    display: block;
+    grid-column: 2;
+    min-width: 0;
+  }
+  body[data-screen="app"] .panel-cal { grid-row: 1; }
+  body[data-screen="app"] .panel-inbox { grid-row: 2; margin-top: 8px; }
+  body[data-screen="app"] .panel-money { grid-row: 3; margin-top: 8px; }
+}
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

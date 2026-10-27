@@ -157,13 +157,16 @@ Halfway, all-done, and inbox-zero confetti run only after a tap crosses that lin
 
 These run in the top-level page, not through the hop page.
 
-- `sms:+1…` opens that Messages thread. `sms:` opens Messages. Both are a top-level `location.href` from the tap. There is no web fallback.
-- A Gmail thread or inbox URL opens the Gmail app with `googlegmail://`, also by top-level `location.href`. The page does not navigate to `mail.google.com` on its own. If it is still visible about 3 seconds later, a small “Open in browser instead” link appears.
+- `sms:+1…` opens that Messages thread. `sms:` opens Messages. Both are a top-level `location.href` from the tap, including on a Mac, where Messages handles `sms:`. There is no web fallback.
+- On iPhone and iPad, a Gmail thread or inbox URL opens the Gmail app with `googlegmail://`, also by top-level `location.href`. The page does not navigate to `mail.google.com` on its own. If it is still visible about 3 seconds later, a small “Open in browser instead” link appears.
+- On a Mac or other desktop, that same Gmail link opens `https://mail.google.com` in a new tab. `googlegmail://` is iOS-only.
 - Any other http(s) link opens in a new tab.
 
 ## Shell
 
-`manifest.webmanifest` sets `display: standalone` and a white theme. Icons are `icon-180.png`, `icon-192.png`, and `icon-512.png` (green rounded square, white check). `sw.js` precaches the shell and uses network-first for `data.enc.json` and `data.sample.json`.
+`manifest.webmanifest` sets `name`, `short_name`, `display: standalone`, `start_url` and `scope` of `./`, and a white theme. Icons are `icon-180.png`, `icon-192.png`, and `icon-512.png` (green rounded square, white check), plus `icon-512-maskable.png` for installers that crop to a circle or squircle. `sw.js` has a fetch handler, precaches the shell, and uses network-first for `data.enc.json` and `data.sample.json`.
+
+On a Mac, Safari 17 and later can use File > Add to Dock. Chrome and Edge can use Install. Both read this manifest. At 900px and wider the page is two columns: to-dos on the left, calendar, inbox, and spending on the right. Enter opens a new to-do. R syncs.
 
 ## Test
 
