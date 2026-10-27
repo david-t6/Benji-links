@@ -6,6 +6,7 @@
 const DATA_URL = "https://david-t6.github.io/Benji-links/app/data.enc.json";
 const APP_URL = "https://david-t6.github.io/Benji-links/app/";
 const KEYCHAIN_KEY = "benjis-day-passcode";
+const KEYCHAIN_AES = "benjis-day-aes-key";
 const CACHE_NAME = "benjis-day-cache.json";
 
 const PAPER = new Color("#FEFAF0");
@@ -37,6 +38,51 @@ async function benjiDecrypt(passcode, env) {
     false,
     ["decrypt"]
   );
+  var buf = await crypto.subtle.decrypt({ name: "AES-GCM", iv: iv }, key, ct);
+  return JSON.parse(new TextDecoder().decode(buf));
+}
+async function benjiUnlock(passcode, env) {
+  if (!env || env.v !== 1 || !env.salt || !env.iv || !env.ct) throw new Error("bad envelope");
+  function b64(s) {
+    var bin = atob(String(s));
+    var out = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+    return out;
+  }
+  function b64e(bytes) {
+    var s = "";
+    for (var i = 0; i < bytes.length; i++) s += String.fromCharCode(bytes[i]);
+    return btoa(s);
+  }
+  var salt = b64(env.salt);
+  var iv = b64(env.iv);
+  var ct = b64(env.ct);
+  if (salt.length !== 16 || iv.length !== 12 || ct.length < 17) throw new Error("bad envelope");
+  var base = await crypto.subtle.importKey("raw", new TextEncoder().encode(String(passcode)), "PBKDF2", false, ["deriveKey"]);
+  var key = await crypto.subtle.deriveKey(
+    { name: "PBKDF2", salt: salt, iterations: 210000, hash: "SHA-256" },
+    base,
+    { name: "AES-GCM", length: 256 },
+    true,
+    ["decrypt"]
+  );
+  var rawKey = b64e(new Uint8Array(await crypto.subtle.exportKey("raw", key)));
+  var buf = await crypto.subtle.decrypt({ name: "AES-GCM", iv: iv }, key, ct);
+  return { data: JSON.parse(new TextDecoder().decode(buf)), rawKey: rawKey };
+}
+async function benjiAesDecrypt(rawKeyB64, env) {
+  if (!env || env.v !== 1 || !env.iv || !env.ct) throw new Error("bad envelope");
+  function b64(s) {
+    var bin = atob(String(s));
+    var out = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+    return out;
+  }
+  var keyBytes = b64(rawKeyB64);
+  var iv = b64(env.iv);
+  var ct = b64(env.ct);
+  if (keyBytes.length !== 32 || iv.length !== 12 || ct.length < 17) throw new Error("bad envelope");
+  var key = await crypto.subtle.importKey("raw", keyBytes, { name: "AES-GCM" }, false, ["decrypt"]);
   var buf = await crypto.subtle.decrypt({ name: "AES-GCM", iv: iv }, key, ct);
   return JSON.parse(new TextDecoder().decode(buf));
 }
@@ -80,27 +126,38 @@ async function askPasscode() {
 async function passcode() {
   if (Keychain.contains(KEYCHAIN_KEY)) {
     const saved = Keychain.get(KEYCHAIN_KEY);
-    if (saved) return saved;
+    if (saved) return { value: saved, fresh: false };
   }
-  if (config.runsInWidget) return "";
+  if (config.runsInWidget) return { value: "", fresh: false };
   const value = await askPasscode();
-  if (!value) return "";
+  if (!value) return { value: "", fresh: false };
   Keychain.set(KEYCHAIN_KEY, value);
-  return value;
+  return { value: value, fresh: true };
 }
 
-async function decryptEnvelope(passcodeValue, env) {
-  const view = new WebView();
-  // A blank page on the app origin. crypto.subtle needs a secure base URL,
-  // and loading the app itself would run its scripts and service worker.
-  await view.loadHTML("<html></html>", APP_URL);
-  // evaluateJavaScript does not await a returned Promise unless useCallback
-  // is true. completion() is what actually hands the string back.
-  const expr = DECRYPT_JS
-    + "; benjiDecrypt(" + JSON.stringify(passcodeValue) + ", " + JSON.stringify(env) + ")"
-    + ".then(d => completion(JSON.stringify(d)))"
-    + ".catch(e => completion('ERR:' + ((e && e.name) || 'Error') + ((e && e.message) ? (':' + e.message) : '')));";
-  const raw = await view.evaluateJavaScript(expr, true);
+function readAes() {
+  try {
+    if (!Keychain.contains(KEYCHAIN_AES)) return null;
+    const rec = JSON.parse(Keychain.get(KEYCHAIN_AES));
+    if (!rec || rec.v !== 1 || !rec.salt || !rec.key) return null;
+    return rec;
+  } catch (err) {
+    return null;
+  }
+}
+
+function saveAes(salt, rawKey) {
+  if (!salt || !rawKey) return;
+  Keychain.set(KEYCHAIN_AES, JSON.stringify({ v: 1, salt: salt, key: rawKey }));
+}
+
+function forgetPasscode() {
+  if (config.runsInWidget) return;
+  try { Keychain.remove(KEYCHAIN_KEY); } catch (ignore) {}
+  try { Keychain.remove(KEYCHAIN_AES); } catch (ignore) {}
+}
+
+function parseWebResult(raw) {
   if (typeof raw !== "string" || !raw) throw new Error("webview");
   if (raw.indexOf("ERR:") === 0) {
     const detail = raw.slice(4);
@@ -111,9 +168,21 @@ async function decryptEnvelope(passcodeValue, env) {
     }
     throw new Error(detail || "webview");
   }
-  const data = JSON.parse(raw);
-  if (!data || data.v !== 1) throw new Error("decrypt");
-  return data;
+  return JSON.parse(raw);
+}
+
+async function evalDecrypt(callExpr) {
+  const view = new WebView();
+  // A blank page on the app origin. crypto.subtle needs a secure base URL,
+  // and loading the app itself would run its scripts and service worker.
+  await view.loadHTML("<html></html>", APP_URL);
+  // evaluateJavaScript does not await a returned Promise unless useCallback
+  // is true. completion() is what actually hands the string back.
+  const expr = DECRYPT_JS
+    + "; " + callExpr
+    + ".then(d => completion(JSON.stringify(d)))"
+    + ".catch(e => completion('ERR:' + ((e && e.name) || 'Error') + ((e && e.message) ? (':' + e.message) : '')));";
+  return parseWebResult(await view.evaluateJavaScript(expr, true));
 }
 
 async function loadDay(pass) {
@@ -124,24 +193,39 @@ async function loadDay(pass) {
     req.timeoutInterval = 20;
     env = await req.loadJSON();
   } catch (err) {
-    return cached;
+    return { data: cached, stale: !!cached };
+  }
+  if (config.runsInWidget) {
+    const saved = readAes();
+    if (saved && saved.salt === env.salt) {
+      try {
+        const fresh = await evalDecrypt("benjiAesDecrypt(" + JSON.stringify(saved.key) + ", " + JSON.stringify(env) + ")");
+        if (fresh && fresh.v === 1) {
+          writeCache(fresh);
+          return { data: fresh, stale: false };
+        }
+      } catch (err) { /* WebView or decrypt failed. Keep the key and the last day. */ }
+    }
+    return { data: cached, stale: !!cached };
   }
   try {
-    const fresh = await decryptEnvelope(pass, env);
-    writeCache(fresh);
-    return fresh;
+    const opened = await evalDecrypt("benjiUnlock(" + JSON.stringify(pass) + ", " + JSON.stringify(env) + ")");
+    if (!opened || !opened.data || opened.data.v !== 1 || !opened.rawKey) throw new Error("decrypt");
+    writeCache(opened.data);
+    saveAes(env.salt, opened.rawKey);
+    return { data: opened.data, stale: false };
   } catch (err) {
     // Only a failed AES-GCM check means the passcode is wrong. WebView,
     // network, and envelope errors keep the Keychain entry and the last day.
-    if (err && err.name === "OperationError" && !config.runsInWidget) {
-      try { Keychain.remove(KEYCHAIN_KEY); } catch (ignore) {}
+    if (err && err.name === "OperationError") {
+      forgetPasscode();
       const alert = new Alert();
       alert.title = "Benji's Day";
       alert.message = "That passcode didn't open the day. Run the script again to try another.";
       alert.addAction("OK");
       await alert.present();
     }
-    return cached;
+    return { data: cached, stale: !!cached };
   }
 }
 
@@ -206,6 +290,14 @@ async function appIcon() {
   } catch (err) {
     return null;
   }
+}
+
+function setupURL() {
+  let name = "Benji's Day";
+  try {
+    if (Script.name) name = Script.name();
+  } catch (err) { /* keep the default name */ }
+  return "scriptable:///run/" + encodeURIComponent(name);
 }
 
 function baseWidget() {
@@ -275,18 +367,19 @@ function addCount(widget, open, done, big) {
 
 function paintLocked(image) {
   const widget = baseWidget();
+  widget.url = setupURL();
   addMark(widget, image);
   const title = widget.addText("Benji's Day");
   title.font = Font.boldSystemFont(16);
   title.textColor = INK;
   widget.addSpacer(6);
-  const body = widget.addText("Open this script in Scriptable once and save your passcode.");
+  const body = widget.addText("Tap to set up");
   body.font = Font.regularSystemFont(13);
   body.textColor = SUB;
   return widget;
 }
 
-function paint(data, image) {
+function paint(data, image, stale) {
   const family = config.widgetFamily || "medium";
   const counts = taskCounts(data);
   const event = nextEvent(data);
@@ -296,7 +389,7 @@ function paint(data, image) {
   if (family === "small") {
     addCount(widget, counts.open.length, counts.done, false);
     widget.addSpacer();
-    const updated = widget.addText(data.UPDATED ? String(data.UPDATED) : "");
+    const updated = widget.addText(data.UPDATED ? ((stale ? "Updated " : "") + data.UPDATED) : "");
     updated.font = Font.regularSystemFont(11);
     updated.textColor = SUB;
     updated.lineLimit = 1;
@@ -331,7 +424,7 @@ function paint(data, image) {
       line.lineLimit = 1;
     });
     right.addSpacer(4);
-    const updated = right.addText(data.UPDATED ? String(data.UPDATED) : "");
+    const updated = right.addText(data.UPDATED ? ((stale ? "Updated " : "") + data.UPDATED) : "");
     updated.font = Font.regularSystemFont(11);
     updated.textColor = SUB;
     updated.lineLimit = 1;
@@ -377,24 +470,31 @@ function paint(data, image) {
   return widget;
 }
 
-async function run() {
-  const image = await appIcon();
-  const pass = await passcode();
-  if (!pass) {
-    const cached = readCache();
-    return cached ? paint(cached, image) : paintLocked(image);
-  }
-  const data = await loadDay(pass);
-  if (!data) return paintLocked(image);
-  return paint(data, image);
+async function savedAlert() {
+  const alert = new Alert();
+  alert.title = "Benji's Day";
+  alert.message = "Saved. Your widget will update in a minute.";
+  alert.addAction("OK");
+  await alert.present();
 }
 
-const widget = await run();
-Script.setWidget(widget);
-if (!config.runsInWidget) {
+async function run() {
+  const image = await appIcon();
+  const got = await passcode();
+  if (!got.value) return { widget: paintLocked(image), fresh: false };
+  const loaded = await loadDay(got.value);
+  if (!loaded.data) return { widget: paintLocked(image), fresh: false };
+  return { widget: paint(loaded.data, image, loaded.stale), fresh: got.fresh && !loaded.stale };
+}
+
+const outcome = await run();
+Script.setWidget(outcome.widget);
+if (outcome.fresh) {
+  await savedAlert();
+} else if (!config.runsInWidget) {
   const family = config.widgetFamily;
-  if (family === "small") await widget.presentSmall();
-  else if (family === "large") await widget.presentLarge();
-  else await widget.presentMedium();
+  if (family === "small") await outcome.widget.presentSmall();
+  else if (family === "large") await outcome.widget.presentLarge();
+  else await outcome.widget.presentMedium();
 }
 Script.complete();
