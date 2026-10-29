@@ -899,3 +899,21 @@ body[data-tab="money"] .panel-money { display: block; }
   .toast { animation: none !important; opacity: 1 !important; }
   .confetti-bit { display: none !important; }
 }
+
+/* Suggested replies (Needs a reply, expanded) */
+.suggest { margin-bottom: 14px; }
+.sugg-head { font-size: 13px; color: #6B7076; margin-bottom: 6px; }
+.sugg-list { display: flex; flex-direction: column; gap: 8px; }
+.sugg { background: #F4F5F6; border-radius: 14px; padding: 10px 12px; }
+.sugg.in { animation: rhIn 260ms ease-out both; }
+.sugg-text { font-size: 15px; line-height: 20px; color: #111214; overflow-wrap: anywhere; }
+.sugg-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.sugg-pill {
+  display: inline-flex; align-items: center; justify-content: center; gap: 4px;
+  min-height: 36px; padding: 0 14px; border: none; border-radius: 999px;
+  background: #FFFFFF; color: #111214; font: inherit; font-size: 14px; font-weight: 600;
+  text-decoration: none; cursor: pointer; -webkit-tap-highlight-color: transparent;
+}
+.sugg-pill.ok { color: #00C805; }
+.sugg-note { font-size: 13px; line-height: 18px; color: #A2A7AD; margin-top: 6px; }
+@media (prefers-reduced-motion: reduce) { .sugg.in { animation: none; } }
