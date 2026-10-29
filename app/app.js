@@ -1963,6 +1963,69 @@
     var g = (S.data.gmail || {})[item.lead];
     return g ? "Open " + g.name + " Gmail" : "Open";
   }
+  /* Suggested replies (data `replies`, 2-3 texts in Benji's voice). 1:1 texts get "Send in Messages"
+   * (sms:NUM&body= on iOS, sms:NUM?body= elsewhere, prefilled) plus Copy; group chats get Copy only. */
+  function replyBodyHref(item, text) {
+    if (item.lead !== "Text" || item.group || !item.sms) return "";
+    var num = String(item.sms).replace(/[^0-9+]/g, "");
+    if (!num) return "";
+    return "sms:" + num + (isIOS() ? "&" : "?") + "body=" + encodeURIComponent(text);
+  }
+  function copyText(text) {
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text).catch(function () { /* ignore */ });
+        return true;
+      }
+    } catch (e) { /* fall through */ }
+    try {
+      var ta = el("textarea", { readonly: "", style: "position:fixed;opacity:0;top:0;left:0" });
+      ta.value = text;
+      document.body.append(ta);
+      ta.select();
+      var ok = document.execCommand("copy");
+      ta.remove();
+      return ok;
+    } catch (e) { return false; }
+  }
+  function suggestionsEl(item) {
+    var reps = (item.replies || []).filter(function (r) { return typeof r === "string" && r.trim(); }).slice(0, 3);
+    if (!reps.length) return null;
+    var list = el("div", { class: "sugg-list" });
+    reps.forEach(function (r, k) {
+      var row = el("div", { class: "sugg-row" });
+      var href = replyBodyHref(item, r);
+      if (href) {
+        row.append(el("a", {
+          class: "sugg-pill press",
+          href: href,
+          onclick: function (e) { e.preventDefault(); openNative(href); },
+        }, ["Send in Messages ", el("span", { "aria-hidden": "true", text: "›" })]));
+      }
+      var copy = el("button", {
+        class: "sugg-pill press",
+        type: "button",
+        "aria-label": "Copy suggested reply " + (k + 1),
+        text: "Copy",
+        onclick: function () {
+          if (!copyText(r)) return;
+          copy.textContent = "Copied";
+          copy.classList.add("ok");
+          setTimeout(function () { copy.textContent = "Copy"; copy.classList.remove("ok"); }, 1500);
+        },
+      });
+      row.append(copy);
+      list.append(el("div", { class: "sugg in", style: "animation-delay:" + (k * 50) + "ms" }, [
+        el("div", { class: "sugg-text", text: r }),
+        row,
+      ]));
+    });
+    return el("div", { class: "suggest" }, [
+      el("div", { class: "sugg-head", text: "Suggested replies" }),
+      list,
+      el("div", { class: "sugg-note", text: item.group ? "Group chat: copy one, then paste it in the thread." : "Opens Messages with the text filled in. Edit any [blank] before sending." }),
+    ]);
+  }
   function inboxCard(item, needs, first) {
     var name = displayName(item.title);
     var parts = splitNext(item.detail);
@@ -1983,7 +2046,7 @@
           el("strong", { text: name }),
           el("span", { class: "when-r", text: item.meta }),
         ]),
-        el("span", { class: "lead", text: item.lead }),
+        el("span", { class: "lead", text: item.lead + (needs && item.replies && item.replies.length ? " · Suggested replies" : "") }),
         el("span", { class: "summary" + (open ? "" : " clamp"), text: parts.what }),
       ]),
     ]));
@@ -1994,6 +2057,10 @@
           el("div", { text: "Next step" }),
           el("strong", { text: parts.next }),
         ]));
+      }
+      if (needs) {
+        var sg = suggestionsEl(item);
+        if (sg) actions.append(sg);
       }
       var href = replyRaw(item);
       var row = el("div", { class: "pill-row" });
