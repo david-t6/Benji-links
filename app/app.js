@@ -5,6 +5,7 @@
   var PASS_KEY = "benjis-day:passcode";
   var REFRESH_KEY = "benjis-day:refresh-at";
   var STATE_KEY = "benjis-day:v2";
+  var KEEP_MS = 7 * 24 * 3600 * 1000; // keep a local check-off this long even if its row is gone
   var FACE_KEY = "benjis-day:face";
   var OFFER_KEY = "benjis-day:face-offer";
   var K = { green: "#00C805", ink: "#111214", bg: "#FFFFFF", soft: "#7BE07F" };
@@ -265,15 +266,50 @@
 
   /* ---------- model ---------- */
 
+  /* Stable ids (since v9, Oct 29 2026). SAME algorithm as done_state.py on the box and the
+   * Page's UI block; change all three together.
+   *   to-do: task.id (u-... own, or an id the refresh kept) || "t-" + h(norm(text))
+   *   inbox: "i-" + h(sender + "|" + time); alt "s-" + h(norm(summary)) */
+  function normText(s) {
+    return String(s == null ? "" : s).normalize("NFKC").toLowerCase()
+      .replace(/[\u2018\u2019\u201b\u02bc`]/g, "'").replace(/&/g, " and ").replace(/'/g, "")
+      .replace(/[^a-z0-9]+/g, " ").trim();
+  }
+  function fnvHex(b, seed) {
+    var x = seed >>> 0;
+    for (var i = 0; i < b.length; i++) { x ^= b[i]; x = Math.imul(x, 0x01000193) >>> 0; }
+    var h = x.toString(16);
+    while (h.length < 8) h = "0" + h;
+    return h;
+  }
+  function hid(s) {
+    var b = new TextEncoder().encode(String(s));
+    return fnvHex(b, 0x811c9dc5) + fnvHex(b, 0x050c5d1f);
+  }
+  function todoTextId(text) { return "t-" + hid(normText(text)); }
+  function metaTime(meta) {
+    var re = /(\d{1,2}):(\d{2})\s*([ap])/g, m, last = null, low = String(meta || "").toLowerCase();
+    while ((m = re.exec(low))) last = m;
+    if (last) return parseInt(last[1], 10) + ":" + last[2] + last[3];
+    return normText(meta);
+  }
+  function senderKey(item) {
+    var d = String(item.sms || "").replace(/\D/g, "");
+    if (d && !item.group) return d.slice(-10);
+    return normText(displayName(String(item.title || "")));
+  }
   function inboxId(item) {
-    return item.title + "|" + item.meta + "|" + splitNext(item.detail).what;
+    return "i-" + hid(senderKey(item) + "|" + metaTime(item.meta));
+  }
+  function inboxAlt(item) {
+    return "s-" + hid(normText(splitNext(item.detail).what));
   }
   var SECTIONS = ["Church", "Weekday Coffee", "Grace & Growth", "Personal"];
   function stableTodoId(task, groupName, kind) {
     var own = task && typeof task.id === "string" ? task.id : "";
-    // Mine items carry their u- id. Everything else keeps group|kind|text.
-    if (kind === "t" && own && (task.mine === true || own.indexOf("u-") === 0)) return own;
-    return groupName + "|" + kind + "|" + (task && task.text ? task.text : "");
+    // Own items carry their u- id; the box may also send a kept t- id. Everything else: t-hash(text).
+    if (own && (own.indexOf("u-") === 0 || own.indexOf("t-") === 0)) return own;
+    return todoTextId(task && task.text ? task.text : "");
   }
   function sectionNames() {
     return SECTIONS.slice();
@@ -344,10 +380,10 @@
   function allInbox() {
     var out = [];
     (S.data.needsReply || []).forEach(function (item) {
-      out.push(Object.assign({}, item, { needs: true, id: inboxId(item) }));
+      out.push(Object.assign({}, item, { needs: true, id: inboxId(item), alt: inboxAlt(item) }));
     });
     (S.data.fyi || []).forEach(function (item) {
-      out.push(Object.assign({}, item, { needs: false, id: inboxId(item) }));
+      out.push(Object.assign({}, item, { needs: false, id: inboxId(item), alt: inboxAlt(item) }));
     });
     return out;
   }
@@ -358,6 +394,7 @@
   }
   function inboxHidden(item) {
     var ov = S.overrides[item.id];
+    if (!(ov && ov.type === "inbox") && item.alt) ov = S.overrides[item.alt];
     return !!(ov && ov.type === "inbox" && ov.done);
   }
   function counts() {
@@ -394,7 +431,7 @@
       var raw = localStorage.getItem(STATE_KEY);
       if (!raw) return;
       var p = JSON.parse(raw);
-      S.overrides = p.overrides && typeof p.overrides === "object" ? p.overrides : {};
+      S.overrides = migrateOverrides(p.overrides && typeof p.overrides === "object" ? p.overrides : {});
       S.queue = Array.isArray(p.queue) ? p.queue : [];
       S.added = Array.isArray(p.added) ? p.added.filter(function (a) {
         return a && typeof a.id === "string" && a.id.indexOf("u-") === 0 && typeof a.text === "string" && a.text;
@@ -407,6 +444,25 @@
       S.added = [];
       S.removed = {};
     }
+  }
+  /* v8 keyed check-offs by "Group|t|text" and "title|meta|summary"; re-key them to stable ids. */
+  function migrateOverrides(o) {
+    var out = {};
+    Object.keys(o).forEach(function (k) {
+      var ov = o[k];
+      if (!ov || typeof ov !== "object") return;
+      var id = k;
+      if (ov.type === "todo" && k.indexOf("u-") !== 0 && k.indexOf("t-") !== 0) {
+        var parts = k.split("|");
+        id = todoTextId(parts.length >= 3 ? parts.slice(2).join("|") : (ov.text || k));
+      } else if (ov.type === "inbox" && k.indexOf("i-") !== 0 && k.indexOf("s-") !== 0) {
+        var ip = k.split("|");
+        id = "s-" + hid(normText(ov.text || (ip.length >= 3 ? ip.slice(2).join("|") : "")));
+      }
+      var cur = out[id];
+      if (!cur || String(cur.at || "") < String(ov.at || "")) out[id] = Object.assign({}, ov, { id: id });
+    });
+    return out;
   }
   function saveState() {
     try {
@@ -465,6 +521,9 @@
     if (typeof ev.id !== "string" || !ev.id) return;
     if (typeof ev.done !== "boolean") return;
     if (typeof ev.at !== "string" || !ev.at) return;
+    var tmp = {};
+    tmp[ev.id] = { type: ev.type, text: ev.text, done: ev.done, at: ev.at };
+    ev = Object.assign({}, ev, { id: Object.keys(migrateOverrides(tmp))[0] || ev.id });
     var cur = S.overrides[ev.id];
     if (cur && cur.at >= ev.at) return;
     S.overrides[ev.id] = {
@@ -482,14 +541,19 @@
     allTodos().forEach(function (t) { todos[t.id] = t; });
     var inbox = {};
     allInbox().forEach(function (i) { inbox[i.id] = i; });
+    allInbox().forEach(function (i) { if (!inbox[i.alt]) inbox[i.alt] = i; });
+    var now = Date.now();
     Object.keys(S.overrides).forEach(function (id) {
       var ov = S.overrides[id];
+      var old = !(now - (Date.parse(ov.at) || 0) < KEEP_MS);
+      // A local check-off is only dropped once the published data agrees with it, or after
+      // KEEP_MS if its row is gone (so a refresh that drops and re-adds a row can't undo it).
       if (ov.type === "todo") {
         var item = todos[id];
-        if (!item || !!item.done === !!ov.done) delete S.overrides[id];
+        if (item ? !!item.done === !!ov.done : old) delete S.overrides[id];
       } else if (ov.type === "inbox") {
         var row = inbox[id];
-        if (!row || ov.done === false) delete S.overrides[id];
+        if (ov.done ? (!row && old) : !!row) delete S.overrides[id];
       }
     });
   }
@@ -511,7 +575,9 @@
       return { type: "add", id: ev.id, text: String(ev.text || "").trim(), section: normalizeSection(ev.section), at: ev.at };
     }
     if (ev.type === "remove") return { type: "remove", id: ev.id, at: ev.at };
-    return { type: ev.type, id: ev.id, text: ev.text || "", done: !!ev.done, at: ev.at };
+    var body = { type: ev.type, id: ev.id, text: ev.text || "", done: !!ev.done, at: ev.at };
+    ["alt", "title", "meta", "sms", "group", "src"].forEach(function (k) { if (ev[k] != null && ev[k] !== "") body[k] = ev[k]; });
+    return body;
   }
 
   /* ---------- links ---------- */
@@ -1335,7 +1401,7 @@
   function toggleTodo(item) {
     var cur = isDone(item);
     var next = !cur;
-    enqueue({ type: "todo", id: item.id, text: item.text, done: next, at: nowIso() });
+    enqueue({ type: "todo", id: item.id, text: item.text, src: item.src && item.src.href ? item.src.href : "", done: next, at: nowIso() });
     S.popId = item.id;
     S.burstId = next ? item.id : null;
     if (next) {
@@ -1353,14 +1419,22 @@
       render();
     }
   }
-  function markInbox(item, done) {
-    enqueue({
+  function inboxEvent(item, done) {
+    return {
       type: "inbox",
       id: item.id,
+      alt: item.alt || inboxAlt(item),
       text: splitNext(item.detail).what,
+      title: item.title || "",
+      meta: item.meta || "",
+      sms: item.sms || "",
+      group: !!item.group,
       done: done,
       at: nowIso(),
-    });
+    };
+  }
+  function markInbox(item, done) {
+    enqueue(inboxEvent(item, done));
     noteTapMilestones();
     render();
   }
@@ -1933,13 +2007,7 @@
         onclick: function () {
           allInbox().forEach(function (item) {
             if (!inboxHidden(item)) return;
-            enqueue({
-              type: "inbox",
-              id: item.id,
-              text: splitNext(item.detail).what,
-              done: false,
-              at: nowIso(),
-            });
+            enqueue(inboxEvent(item, false));
           });
           noteTapMilestones();
           render();

@@ -172,7 +172,7 @@ These run in the top-level page, not through the hop page.
 
 ## Shell
 
-`manifest.webmanifest` sets `name`, `short_name`, `display: standalone`, `start_url` and `scope` of `./`, and an off-white theme (`#FEFAF0`). The icon is a golden sun with a white check on that same off-white. `icon-1024.png` is the source. The page uses `icon-180.png` as the Apple touch icon, `icon-192.png` and `icon-512.png` (`purpose: any`) in the manifest, and `favicon-32.png` / `favicon-16.png` in the browser tab. `icon-512-maskable.png` is the same artwork at 80% size, centered, so a circle or squircle crop keeps the rays. Icon links carry `?v=7`. `sw.js` precaches the shell as `benji-day-shell-v7` and uses network-first for `data.enc.json` and `data.sample.json`.
+`manifest.webmanifest` sets `name`, `short_name`, `display: standalone`, `start_url` and `scope` of `./`, and an off-white theme (`#FEFAF0`). The icon is a golden sun with a white check on that same off-white. `icon-1024.png` is the source. The page uses `icon-180.png` as the Apple touch icon, `icon-192.png` and `icon-512.png` (`purpose: any`) in the manifest, and `favicon-32.png` / `favicon-16.png` in the browser tab. `icon-512-maskable.png` is the same artwork at 80% size, centered, so a circle or squircle crop keeps the rays. Icon links carry `?v=9`. `sw.js` precaches the shell as `benji-day-shell-v9` and uses network-first for `data.enc.json` and `data.sample.json`.
 
 On a Mac, Safari 17 and later can use File > Add to Dock. Chrome and Edge can use Install. Both read this manifest. At 900px and wider the page is two columns: to-dos on the left, calendar, inbox, and spending on the right. Enter opens a new to-do. R syncs.
 
@@ -183,3 +183,14 @@ node --test app/test/crypto.test.cjs
 ```
 
 That encrypts a sample with an independent PBKDF2/AES-GCM implementation and with `crypto.js`, checks both directions, checks the topic hash, and round-trips the Face ID passcode wrap.
+
+## Check-off ids (v9, Oct 29 2026)
+
+Check-offs are keyed by stable ids so they survive reloads, re-logins and data refreshes:
+
+- To-do: the item's `id` when the data carries one (`u-…` for your own to-dos, or a kept `t-…` id), otherwise `t-` + hash of the normalized text.
+- Inbox: `i-` + hash of sender (phone number for 1:1 texts, otherwise the name) + the message time. A second key, `s-` + hash of the summary, also matches.
+- The hash is two 32-bit FNV-1a hashes over UTF-8 (seeds `0x811c9dc5`, `0x050c5d1f`). It is the same on the box and in the Page.
+- A local check-off stays until the published data agrees with it. If its row disappears, it is kept for 7 days. v8 keys (`Group|t|text`, `title|meta|summary`) are migrated on load.
+- Inbox events also carry `alt`, `title`, `meta`, `sms` and `group`, so the box can match them.
+- `page-state.enc.json` is the Page's encrypted done map. It holds hashed ids only, and the app does not use it.
