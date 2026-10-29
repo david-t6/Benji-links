@@ -225,6 +225,12 @@
         }
       }
 
+      function isIOS() {
+        var ua = navigator.userAgent || "";
+        if (/iPad|iPhone|iPod/.test(ua)) return true;
+        return navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1;
+      }
+
       function rawHash() {
         var href = String(window.location.href || "");
         var mark = href.indexOf("#");
@@ -248,7 +254,7 @@
           var key = safeDecode(part.slice(0, eq));
           var val = safeDecode(part.slice(eq + 1));
           if (key === null || val === null) return null;
-          if (key !== "sms" && key !== "gmail" && key !== "acct") continue;
+          if (key !== "sms" && key !== "gmail" && key !== "acct" && key !== "body") continue;
           if (Object.prototype.hasOwnProperty.call(params, key)) return null;
           params[key] = val;
         }
@@ -276,6 +282,20 @@
         var hasGmail = Object.prototype.hasOwnProperty.call(params, "gmail");
         var hasUrl = Object.prototype.hasOwnProperty.call(params, "url");
         if ((hasSms ? 1 : 0) + (hasGmail ? 1 : 0) + (hasUrl ? 1 : 0) !== 1) return null;
+
+        var hasBody = Object.prototype.hasOwnProperty.call(params, "body");
+        if (hasBody && !hasSms) return null;
+        if (hasSms && hasBody) {
+          // Suggested reply: open this conversation with the text prefilled (iOS: sms:NUM&body=, others: sms:NUM?body=).
+          if (!SMS_RE.test(params.sms) || !params.sms || !params.body || params.body.length > 1000) return null;
+          return {
+            kind: "sms",
+            href: "sms:" + params.sms + (isIOS() ? "&" : "?") + "body=" + encodeURIComponent(params.body),
+            label: "Open in Messages",
+            lead: "Opening Messages with your reply filled in.",
+            dest: params.body
+          };
+        }
 
         if (hasSms) {
           if (!SMS_RE.test(params.sms)) return null;
