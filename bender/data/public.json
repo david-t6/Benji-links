@@ -1,5 +1,5 @@
 {
-"last_id": "HLErqSiRVsb7",
+"last_id": "ot9Rkp6e365t",
 "items": [
 {
 "id": "tXir0xzkSVYf",
@@ -125,6 +125,266 @@
 "id": "HLErqSiRVsb7",
 "time": 1794573534,
 "message": "{\"v\":1,\"id\":\"06ed7dc5-6e85-40fb-8d45-7e2cf9616b71\",\"name\":\"Tobiah\",\"element\":\"A\",\"side\":\"F\",\"ability\":\"Soundbending\",\"at\":\"2026-11-13T12:38:54.288Z\"}"
+},
+{
+"id": "16zdcvYh6byc",
+"time": 1794573802,
+"message": "{\"v\":1,\"id\":\"c01b1c63-fd3b-4a2b-a7e7-e46b4ba2be66\",\"name\":\"Edson\",\"element\":\"F\",\"side\":\"A\",\"ability\":\"Jet-flame flight\",\"at\":\"2026-11-13T12:43:22.257Z\"}"
+},
+{
+"id": "NmuldED5qpWP",
+"time": 1794574769,
+"message": "{\"v\":1,\"id\":\"1d6db70a-89b9-43e7-86bb-11fa99f52bba\",\"name\":\"Julia\",\"element\":\"E\",\"side\":\"W\",\"ability\":\"Seismic sense\",\"at\":\"2026-11-13T12:59:29.505Z\"}"
+},
+{
+"id": "0NdE5bqqYNzt",
+"time": 1794576472,
+"message": "{\"v\":1,\"id\":\"3429a726-d446-45ef-b7f1-68ee2f422c5e\",\"name\":\"AJ\",\"element\":\"E\",\"side\":\"A\",\"ability\":\"Sandbending\",\"at\":\"2026-11-13T13:27:51.845Z\"}"
+},
+{
+"id": "PzMGfyhRDueo",
+"time": 1794576741,
+"message": "{\"v\":1,\"id\":\"4b195869-3c89-420a-bd2a-2a70243f30c2\",\"name\":\"Amy\",\"element\":\"F\",\"side\":\"W\",\"ability\":\"Lightning redirection\",\"at\":\"2026-11-13T13:32:21.418Z\"}"
+},
+{
+"id": "LH7avltBZl4O",
+"time": 1794576875,
+"message": "{\"v\":1,\"id\":\"619437fb-2411-442e-b549-411923bbbe05\",\"name\":\"Michayela\",\"element\":\"W\",\"side\":\"E\",\"ability\":\"Plantbending\",\"at\":\"2026-11-13T13:34:34.416Z\"}"
+},
+{
+"id": "KmEnexcW2gw2",
+"time": 1794576937,
+"message": "{\"v\":1,\"id\":\"8c5957b8-8be7-48fb-af4e-3b3c07f59cac\",\"name\":\"Gabi\",\"element\":\"F\",\"side\":\"W\",\"ability\":\"Lightning redirection\",\"at\":\"2026-11-13T13:35:37.323Z\"}"
+},
+{
+"id": "gLiW9QkAaexK",
+"time": 1794577086,
+"message": "{\"v\":1,\"id\":\"655802b7-988f-458b-96d1-38651a80f6ef\",\"name\":\"Cristian C\",\"element\":\"A\",\"side\":\"F\",\"ability\":\"Soundbending\",\"at\":\"2026-11-13T13:38:06.506Z\"}"
+},
+{
+"id": "tstLqK6muTHm",
+"time": 1794577337,
+"message": "{\"v\":1,\"id\":\"f39b84b9-6bd5-47dc-8afc-11895e7d07d9\",\"name\":\"Miriam\",\"element\":\"E\",\"side\":\"W\",\"ability\":\"Seismic sense\",\"at\":\"2026-11-13T13:42:15.680Z\"}"
+},
+{
+"id": "uc9h0AAn6a0G",
+"time": 1794577347,
+"message": "{\"v\":1,\"id\":\"09ad4e03-c1a1-4a45-b0f2-86230b3b0388\",\"name\":\"Claudia\",\"element\":\"F\",\"side\":\"W\",\"ability\":\"Lightning redirection\",\"at\":\"2026-11-13T13:42:26.722Z\"}"
+},
+{
+"id": "payJSPm4IklI",
+"time": 1794577751,
+"message": "{\"v\":1,\"id\":\"385343e2-1a7f-49a5-852c-3b69ca7918fe\",\"name\":\"cash\",\"element\":\"F\",\"side\":\"E\",\"ability\":\"Combustion\",\"at\":\"2026-11-13T13:49:11.220Z\"}"
+},
+{
+"id": "Ika7EdezTtL4",
+"time": 1794577808,
+"message": "{\"v\":1,\"id\":\"3630428b-86ea-43d9-854d-33f06b0dc966\",\"name\":\"Julya\",\"element\":\"W\",\"side\":\"E\",\"ability\":\"Plantbending\",\"at\":\"2026-11-13T13:50:08.492Z\"}"
+},
+{
+"id": "rkzCTbbEgBqS",
+"time": 1794577935,
+"message": "{\"v\":1,\"id\":\"c4845233-c64c-4141-a8e3-a23b3866fb74\",\"name\":\"Christine\",\"element\":\"W\",\"side\":\"E\",\"ability\":\"Plantbending\",\"at\":\"2026-11-13T13:52:14.739Z\"}"
+},
+{
+"id": "Jmn29lj1a6c0",
+"time": 1794578021,
+"message": "{\"v\":1,\"id\":\"4b79010e-7f9d-428e-922d-7a2fd5521feb\",\"name\":\"Jordan O\",\"element\":\"E\",\"side\":\"W\",\"ability\":\"Seismic sense\",\"at\":\"2026-11-13T13:53:41.405Z\"}"
+},
+{
+"id": "5ZoLolO0WTHK",
+"time": 1794578062,
+"message": "{\"v\":1,\"id\":\"60bac7fb-a447-4bb4-bb25-58378e6f7880\",\"name\":\"Christian\",\"element\":\"E\",\"side\":\"F\",\"ability\":\"Lavabending\",\"at\":\"2026-11-13T13:54:21.840Z\"}"
+},
+{
+"id": "idRZoyNIQS3O",
+"time": 1794578238,
+"message": "{\"v\":1,\"id\":\"ccbce49b-95b9-4da2-b997-b838509fd394\",\"name\":\"Caleb G\",\"element\":\"A\",\"side\":\"E\",\"ability\":\"Tornado bending\",\"at\":\"2026-11-13T13:57:18.385Z\"}"
+},
+{
+"id": "WQA4ZEj2ReZn",
+"time": 1794578345,
+"message": "{\"v\":1,\"id\":\"13c7d2cd-9a8d-4f7e-98e2-f3fa6b937dff\",\"name\":\"Margie\",\"element\":\"A\",\"side\":\"W\",\"ability\":\"Spiritual projection\",\"at\":\"2026-11-13T13:59:05.120Z\"}"
+},
+{
+"id": "VZVVNcCpMqHv",
+"time": 1794578457,
+"message": "{\"v\":1,\"id\":\"3c8b0f43-b30b-42d7-bfa7-9c615f2a34f2\",\"name\":\"Isa\",\"element\":\"E\",\"side\":\"W\",\"ability\":\"Seismic sense\",\"at\":\"2026-11-13T14:00:56.782Z\"}"
+},
+{
+"id": "bkbj1UEiZDmC",
+"time": 1794578835,
+"message": "{\"v\":1,\"id\":\"11e432e2-f031-44ec-b22a-c1c70b26634f\",\"name\":\"Jayden\",\"element\":\"E\",\"side\":\"A\",\"ability\":\"Sandbending\",\"at\":\"2026-11-13T14:07:15.442Z\"}"
+},
+{
+"id": "zumtOQBPhKQT",
+"time": 1794578906,
+"message": "{\"v\":1,\"id\":\"50357bbe-baf7-4faf-9e48-eabd63c4a09c\",\"name\":\"Ains\",\"element\":\"A\",\"side\":\"E\",\"ability\":\"Tornado bending\",\"at\":\"2026-11-13T14:08:26.236Z\"}"
+},
+{
+"id": "zL7OedEUloql",
+"time": 1794579566,
+"message": "{\"v\":1,\"id\":\"a115d01f-da23-4669-9aeb-c3f0ff5f9e05\",\"name\":\"Fernando\",\"element\":\"E\",\"side\":\"F\",\"ability\":\"Lavabending\",\"at\":\"2026-11-13T14:19:25.970Z\"}"
+},
+{
+"id": "kUP6tAU9TRLc",
+"time": 1794580133,
+"message": "{\"v\":1,\"id\":\"710291df-d67e-4be3-af87-3846aed4d5e2\",\"name\":\"Feli\",\"element\":\"F\",\"side\":\"A\",\"ability\":\"Jet-flame flight\",\"at\":\"2026-11-13T14:28:52.905Z\"}"
+},
+{
+"id": "18BUeKBFoK8Q",
+"time": 1794580833,
+"message": "{\"v\":1,\"id\":\"ac564c39-d0d4-4228-bf66-7e35ed884b02\",\"name\":\"Ricky\",\"element\":\"A\",\"side\":\"F\",\"ability\":\"Soundbending\",\"at\":\"2026-11-13T14:40:33.650Z\"}"
+},
+{
+"id": "LWSUk8DEhgPr",
+"time": 1794582184,
+"message": "{\"v\":1,\"id\":\"b82328ff-7b2c-4873-8677-24d47eec22ed\",\"name\":\"Mitch\",\"element\":\"A\",\"side\":\"E\",\"ability\":\"Tornado bending\",\"at\":\"2026-11-13T15:03:06.062Z\"}"
+},
+{
+"id": "31LvdQBeq80l",
+"time": 1794582198,
+"message": "{\"v\":1,\"id\":\"b442624c-0831-43dd-8fa4-750bc135af26\",\"name\":\"Rebecca\",\"element\":\"F\",\"side\":\"W\",\"ability\":\"Lightning redirection\",\"at\":\"2026-11-13T15:03:18.120Z\"}"
+},
+{
+"id": "1Z7bhbDoeQ9F",
+"time": 1794582428,
+"message": "{\"v\":1,\"id\":\"d2175b8f-c665-46a1-909b-41ab38676eb1\",\"name\":\"Isaac\",\"element\":\"W\",\"side\":\"E\",\"ability\":\"Plantbending\",\"at\":\"2026-11-13T15:07:07.765Z\"}"
+},
+{
+"id": "eMnBoGlhAkKh",
+"time": 1794582834,
+"message": "{\"v\":1,\"id\":\"8d6290aa-919e-4fce-a4c8-229b5c5037be\",\"name\":\"Kori\",\"element\":\"W\",\"side\":\"A\",\"ability\":\"Mist & cloud bending\",\"at\":\"2026-11-13T15:13:53.346Z\"}"
+},
+{
+"id": "TrdcH0b1nFmp",
+"time": 1794583217,
+"message": "{\"v\":1,\"id\":\"a4a1cef3-dd50-4c92-9107-0c7c14c1a5f5\",\"name\":\"Paola\",\"element\":\"A\",\"side\":\"W\",\"ability\":\"Spiritual projection\",\"at\":\"2026-11-13T15:20:17.314Z\"}"
+},
+{
+"id": "oZ0weSOO1m6E",
+"time": 1794583236,
+"message": "{\"v\":1,\"id\":\"d5fac86d-5626-45d8-885f-4e8c9779a5de\",\"name\":\"Alexis S\",\"element\":\"W\",\"side\":\"A\",\"ability\":\"Mist & cloud bending\",\"at\":\"2026-11-13T15:20:36.046Z\"}"
+},
+{
+"id": "Yz8R2xYznn5g",
+"time": 1794583387,
+"message": "{\"v\":1,\"id\":\"6692ab6e-fa61-4c52-89ed-15daa35a3702\",\"name\":\"Grace\",\"element\":\"F\",\"side\":\"W\",\"ability\":\"Lightning redirection\",\"at\":\"2026-11-13T15:23:06.794Z\"}"
+},
+{
+"id": "y2h2mcSDos17",
+"time": 1794583589,
+"message": "{\"v\":1,\"id\":\"cfad0963-0b9a-4e2b-aa73-df6a3d83ab8a\",\"name\":\"T\",\"element\":\"W\",\"side\":\"E\",\"ability\":\"Plantbending\",\"at\":\"2026-11-13T15:26:28.444Z\"}"
+},
+{
+"id": "Fths5KqQuBAc",
+"time": 1794583612,
+"message": "{\"v\":1,\"id\":\"21b7837d-17b6-4f27-9eef-200b940f4a52\",\"name\":\"Jeremiah\",\"element\":\"E\",\"side\":\"F\",\"ability\":\"Lavabending\",\"at\":\"2026-11-13T15:26:53.092Z\"}"
+},
+{
+"id": "58keOl7FoBIv",
+"time": 1794583619,
+"message": "{\"v\":1,\"id\":\"544eed2d-9d9c-41d7-8546-f2b62ccade42\",\"name\":\"Joel\",\"element\":\"E\",\"side\":\"A\",\"ability\":\"Sandbending\",\"at\":\"2026-11-13T15:26:58.737Z\"}"
+},
+{
+"id": "MW67lJQP1rb2",
+"time": 1794584524,
+"message": "{\"v\":1,\"id\":\"b932fdb5-687a-43cb-8fef-576e4d3cc90a\",\"name\":\"Amanda\",\"element\":\"W\",\"side\":\"E\",\"ability\":\"Plantbending\",\"at\":\"2026-11-13T15:42:04.360Z\"}"
+},
+{
+"id": "2oOzWiksELw1",
+"time": 1794584918,
+"message": "{\"v\":1,\"id\":\"e2f95e57-8cfa-4bf8-882d-d46d35c2fb1d\",\"name\":\"Liz\",\"element\":\"A\",\"side\":\"W\",\"ability\":\"Spiritual projection\",\"at\":\"2026-11-13T15:48:37.852Z\"}"
+},
+{
+"id": "9dbGU0prg3Ok",
+"time": 1794585066,
+"message": "{\"v\":1,\"id\":\"1a8e87d0-e809-4c00-b5b5-4b46d894a1d7\",\"name\":\"Damaris\",\"element\":\"W\",\"side\":\"A\",\"ability\":\"Mist & cloud bending\",\"at\":\"2026-11-13T15:51:06.096Z\"}"
+},
+{
+"id": "mq7rkHZunkgt",
+"time": 1794585403,
+"message": "{\"v\":1,\"id\":\"b400ea9d-6e85-464b-b9f4-6161386139ab\",\"name\":\"George\",\"element\":\"E\",\"side\":\"W\",\"ability\":\"Seismic sense\",\"at\":\"2026-11-13T15:56:42.819Z\"}"
+},
+{
+"id": "SE5jtGoyge1E",
+"time": 1794585882,
+"message": "{\"v\":1,\"id\":\"aaddd809-e326-4d24-8242-5d0598dfa66a\",\"name\":\"Hunter\",\"element\":\"W\",\"side\":\"F\",\"ability\":\"Icebending\",\"at\":\"2026-11-13T16:04:42.094Z\"}"
+},
+{
+"id": "Vv85XEb4fys5",
+"time": 1794586254,
+"message": "{\"v\":1,\"id\":\"78542609-33d9-468d-9be7-33a7f8874d6a\",\"name\":\"Shaun Take\",\"element\":\"A\",\"side\":\"F\",\"ability\":\"Soundbending\",\"at\":\"2026-11-13T16:10:54.241Z\"}"
+},
+{
+"id": "tvh6Z8ZlniIX",
+"time": 1794586764,
+"message": "{\"v\":1,\"id\":\"6c64a359-8da5-4c4f-91fc-ba7e2abea5ef\",\"name\":\"Kai\",\"element\":\"A\",\"side\":\"F\",\"ability\":\"Soundbending\",\"at\":\"2026-11-13T16:19:23.748Z\"}"
+},
+{
+"id": "MdXsScVBeK5c",
+"time": 1794586996,
+"message": "{\"v\":1,\"id\":\"4f3daa6b-8bcd-4ae8-ab65-594cfa5e6a57\",\"name\":\"J\",\"element\":\"E\",\"side\":\"W\",\"ability\":\"Seismic sense\",\"at\":\"2026-11-13T16:23:16.348Z\"}"
+},
+{
+"id": "zM8IYKvfMuUK",
+"time": 1794587215,
+"message": "{\"v\":1,\"id\":\"176dbc39-c787-4787-b33f-f49f5e82eeef\",\"name\":\"Gaby\",\"element\":\"W\",\"side\":\"F\",\"ability\":\"Icebending\",\"at\":\"2026-11-13T16:26:54.821Z\"}"
+},
+{
+"id": "0aTOOXwpv7eG",
+"time": 1794587934,
+"message": "{\"v\":1,\"id\":\"180c1a19-62c7-429d-af95-5a0d7ec7ffad\",\"name\":\"Tylur R\",\"element\":\"E\",\"side\":\"A\",\"ability\":\"Sandbending\",\"at\":\"2026-11-13T16:38:54.028Z\"}"
+},
+{
+"id": "UEqTZN8Bq7od",
+"time": 1794588081,
+"message": "{\"v\":1,\"id\":\"79c412ff-6355-4168-90b1-cb2493d48a8f\",\"name\":\"Caleb O\",\"element\":\"E\",\"side\":\"W\",\"ability\":\"Seismic sense\",\"at\":\"2026-11-13T16:41:21.705Z\"}"
+},
+{
+"id": "izvfyVI8hcQP",
+"time": 1794589002,
+"message": "{\"v\":1,\"id\":\"dc5a13c1-4b40-4d27-bf4d-7e531439915a\",\"name\":\"R\",\"element\":\"W\",\"side\":\"E\",\"ability\":\"Plantbending\",\"at\":\"2026-11-13T16:56:41.727Z\"}"
+},
+{
+"id": "JMmbXHF5WpZ7",
+"time": 1794590740,
+"message": "{\"v\":1,\"id\":\"016eb84e-3dfe-42e7-a66c-bce79a9ad1fa\",\"name\":\"Jonathan\",\"element\":\"F\",\"side\":\"W\",\"ability\":\"Lightning redirection\",\"at\":\"2026-11-13T17:25:39.618Z\"}"
+},
+{
+"id": "afArtiHKklJX",
+"time": 1794592981,
+"message": "{\"v\":1,\"id\":\"f3165a44-cf0e-4482-bb30-09e8155cd94b\",\"name\":\"Cameron\",\"element\":\"A\",\"side\":\"W\",\"ability\":\"Spiritual projection\",\"at\":\"2026-11-13T18:03:00.936Z\"}"
+},
+{
+"id": "Ucy0Hy0QDIec",
+"time": 1794593439,
+"message": "{\"v\":1,\"id\":\"6df0e85d-05dd-43ba-b88f-d4bbd6e109f7\",\"name\":\"Kisla\",\"element\":\"F\",\"side\":\"W\",\"ability\":\"Lightning redirection\",\"at\":\"2026-11-13T18:10:39.515Z\"}"
+},
+{
+"id": "TDOS7qiOpua7",
+"time": 1794596930,
+"message": "{\"v\":1,\"id\":\"f4a42e4b-dde5-4216-9b79-23ace7886ff2\",\"name\":\"Susan\",\"element\":\"F\",\"side\":\"W\",\"ability\":\"Lightning redirection\",\"at\":\"2026-11-13T19:08:50.358Z\"}"
+},
+{
+"id": "3x6mmG41fwoO",
+"time": 1794597035,
+"message": "{\"v\":1,\"id\":\"f6ca657b-b709-400e-8384-1021fcfbbc28\",\"name\":\"Susan\",\"element\":\"W\",\"side\":\"F\",\"ability\":\"Icebending\",\"at\":\"2026-11-13T19:10:35.406Z\"}"
+},
+{
+"id": "daHriv8XJo7u",
+"time": 1794598413,
+"message": "{\"v\":1,\"id\":\"fc415565-2474-445f-93ca-e2c2bae7bbc4\",\"name\":\"Paula Wreschinsky\",\"element\":\"W\",\"side\":\"F\",\"ability\":\"Icebending\",\"at\":\"2026-11-13T19:33:33.205Z\"}"
+},
+{
+"id": "jZTbihSobx1p",
+"time": 1794599447,
+"message": "{\"v\":1,\"id\":\"60362237-4b31-4847-8e06-b33410d98968\",\"name\":\"Ariesa\",\"element\":\"W\",\"side\":\"E\",\"ability\":\"Plantbending\",\"at\":\"2026-11-13T19:50:47.152Z\"}"
+},
+{
+"id": "ot9Rkp6e365t",
+"time": 1794599624,
+"message": "{\"v\":1,\"id\":\"20e15aab-6928-4dfa-a782-9c2d897f01f1\",\"name\":\"W\",\"element\":\"W\",\"side\":\"F\",\"ability\":\"Icebending\",\"at\":\"2026-11-13T19:53:44.420Z\"}"
 }
 ]
 }
