@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Bender Quiz · Results</title><meta name="robots" content="noindex">
+<link rel="stylesheet" href="../style.css?v=1">
+</head><body><div class="wrap">
+ <h1>Bender Quiz Results</h1>
+ <p class="sub">Private: only someone with the passcode can read these.</p>
+ <div class="card" id="lock">
+  <label for="pw">Passcode</label>
+  <input type="password" id="pw" autocomplete="current-password">
+  <div class="err hide" id="pwerr">That passcode didn't work.</div>
+  <button class="btn" id="unlock">Unlock</button>
+  <div class="hint">This device will remember it until you tap "Forget this device".</div>
+ </div>
+ <div class="hide" id="view">
+  <div class="counts" id="counts"></div>
+  <div class="card">
+   <div class="row" style="align-items:center;justify-content:space-between">
+    <div class="qnum" id="summary"></div>
+    <label style="font-weight:500;font-size:14px;margin:0"><input type="checkbox" id="latest" checked> Latest per name</label>
+   </div>
+   <table><thead><tr><th>Name</th><th>Element</th><th>When</th></tr></thead><tbody id="rows"></tbody></table>
+   <div class="row"><button class="btn ghost" id="refresh">Refresh</button><button class="btn ghost" id="csv">Download CSV</button></div>
+   <div class="hint" id="note"></div>
+  </div>
+  <button class="btn ghost" id="forget">Forget this device</button>
+ </div>
+</div>
+<script src="../config.js?v=1"></script>
+<script src="../questions.js?v=1"></script>
+<script src="results.js?v=1"></script>
+</body></html>
