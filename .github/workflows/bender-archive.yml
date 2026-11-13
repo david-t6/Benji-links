@@ -20,7 +20,7 @@ jobs:
           if git diff --quiet -- bender/data; then echo "nothing new"; exit 0; fi
           git config user.name "bender-archive"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add bender/data/submissions.json
+          git add bender/data/submissions.json bender/data/public.json
           git commit -m "bender quiz: archive submissions"
           for i in 1 2 3 4 5; do git pull --rebase -q origin main && git push -q origin HEAD:main && exit 0; sleep $((i*3)); done
           exit 1

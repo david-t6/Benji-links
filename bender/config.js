@@ -9,5 +9,6 @@ window.BQ_CONFIG = {
   "iv": "CziE6M3R5xj+ewFU",
   "ct": "Pp4kR0LJ/hn4LMM6ZlgdCCir3k0cYpQ1souW9ZQiQU5ae7nki1phrtsx3A87YwCLPw5n4+qS85QrZMtT+mHRPLIkKRzFqvfZ9f+Yaf0H8ygo7bvYauzFLZYy2nyy30W6vavMRm5Pv1hCimfIQNGw5xCpXRpO1auFq5wYqY0MYAZCgWp3XHcmu8hHcPBgyoCEftDCdRZ0rBFyIg=="
  },
- "startAfter": 1794545693
+ "startAfter": 1794545693,
+ "pubTopic": "bqp-819a61ab7fd09822712cf015"
 };

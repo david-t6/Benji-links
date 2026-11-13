@@ -20,16 +20,16 @@ window.BQ_QUESTIONS = [
   E:"Show up with food and a plan to help",
   F:"Send a bold voice memo prayer over them, right now",
   A:"Send a verse, a meme, and a reminder they're loved"}},
- {q:"Sunday after church, the crew is grabbing lunch. You're the one who…", a:{
-  W:"Notices who's standing alone and invites them along",
-  E:"Already knows the spot that fits everyone's budget",
-  F:"Starts a friendly debate about the sermon",
-  A:"Somehow turns lunch into an afternoon adventure"}},
- {q:"Which Bible scene fires you up the most?", a:{
-  W:"Jesus walking on the water",
-  E:"Nehemiah rebuilding the wall, one brick at a time",
-  F:"Elijah calling down fire on Mount Carmel",
-  A:"Pentecost and the sound of a rushing wind"}},
+ {q:"Game night at someone's apartment. You're the one who…", a:{
+  W:"Keeps the peace when Uno gets a little too heated",
+  E:"Reads the rules out loud and keeps score",
+  F:"Is lovingly trash-talking and playing to win",
+  A:"Invents a brand-new game halfway through"}},
+ {q:"It's potluck Sunday. What are you bringing?", a:{
+  W:"Homemade comfort food, made with love",
+  E:"The plates, cups, ice, and the extra folding table",
+  F:"Something spicy and a dare to try it",
+  A:"A random dessert nobody's ever heard of"}},
  {q:"Outreach day! Your favorite way to love the city:", a:{
   W:"Sitting down with someone and hearing their story",
   E:"Hands-on work like building, cleaning, or packing boxes",
@@ -50,16 +50,16 @@ window.BQ_QUESTIONS = [
   E:"Being there consistently, week after week",
   F:"Speaking life and reminding them who they are",
   A:"Getting them out of the house and laughing again"}},
- {q:"Which fruit of the Spirit shows up most in you?", a:{
-  W:"Kindness and gentleness",
-  E:"Faithfulness and self-control",
-  F:"Love and joy",
-  A:"Peace and patience"}},
- {q:"Pick the verse that feels most like you:", a:{
-  W:"\"Whoever drinks the water I give them will never thirst.\" (John 4:14)",
-  E:"\"The wise man built his house on the rock.\" (Matthew 7:24)",
-  F:"\"Fan into flame the gift of God.\" (2 Timothy 1:6)",
-  A:"\"The wind blows wherever it pleases.\" (John 3:8)"}}
+ {q:"Retreat talent show! Your act is…", a:{
+  W:"An acoustic worship song that has everyone in tears",
+  E:"Running the whole show from backstage (or a human pyramid)",
+  F:"A fierce lip-sync battle",
+  A:"Improv comedy that nobody will ever forget"}},
+ {q:"Last one! Your role in the young adults group chat:", a:{
+  W:"Checking on people and sending prayer requests",
+  E:"The one who actually confirms the plans",
+  F:"Hyping everything with 17 exclamation points",
+  A:"An endless supply of GIFs and memes"}}
 ];
 window.BQ_ELEMENTS = {
  W:{name:"Water",cls:"w",color:"#2f80c9",tag:"The Healer & Encourager",
@@ -82,7 +82,7 @@ window.BQ_ICONS = {
  A:'<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M16 16a3 3 0 1 1 3 3c-5 0-8-4-8-8a8 8 0 0 1 16 0"/><path d="M3 22h14a4 4 0 1 1-4 4"/><path d="M3 8h6"/></svg>'
 };
 window.BQ_ORDER = ["W","E","F","A"];
-// Highest total wins. Ties: the tied element picked on the last question (the verse) wins;
+// Highest total wins. Ties: the tied element picked on the last question (the group chat question) wins;
 // otherwise the tied element picked most recently. Second place shown as a "side".
 window.BQ_SCORE = function(picks){
  var s={W:0,E:0,F:0,A:0}; picks.forEach(function(p){ if(s[p]!==undefined) s[p]++; });
@@ -93,3 +93,12 @@ window.BQ_SCORE = function(picks){
  var rest=window.BQ_ORDER.filter(function(k){return k!==win;}).sort(function(a,b){return s[b]-s[a];});
  return {element:win, scores:s, tie:tied.length>1, side:s[rest[0]]>0?rest[0]:null};
 };
+
+// Bending ability: by main element, varied by the second-place element.
+window.BQ_ABILITIES = {
+ W:{_:["Healing","Glowing water that heals friends' hurts"],E:["Plantbending","Moves the water in every plant and vine"],F:["Icebending","Freezes water into shields and ice spikes"],A:["Mist & cloud bending","Hides the crew in fog and rides on clouds"]},
+ E:{_:["Metalbending","Bends the tiny bits of earth inside metal"],W:["Seismic sense","Feels every footstep through the ground"],F:["Lavabending","Melts rock into flowing lava"],A:["Sandbending","Shapes sand and whips up desert storms"]},
+ F:{_:["Lightning","Splits energy to throw pure lightning"],W:["Lightning redirection","Catches lightning and sends it safely away"],E:["Combustion","Sets off sparks with pure focus"],A:["Jet-flame flight","Flies on blasts of fire"]},
+ A:{_:["Flight","Soars on the wind with no glider needed"],W:["Spiritual projection","Sends their spirit out to check on far-away friends"],E:["Tornado bending","Spins up mini-tornadoes on command"],F:["Soundbending","Throws their voice and bends sound waves"]}
+};
+window.BQ_ABILITY = function(el, side){ var t=window.BQ_ABILITIES[el]||{}; var a=(side&&t[side])||t._||["",""]; return {name:a[0], desc:a[1]}; };

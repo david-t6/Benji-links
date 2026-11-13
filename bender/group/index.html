@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>The Group · Which Bender Are You?</title><meta name="robots" content="noindex">
+<link rel="stylesheet" href="../style.css?v=3">
+</head><body><div class="wrap">
+ <h1>The Group</h1>
+ <p class="sub">Who's Water, Earth, Fire and Air in our young adults crew.</p>
+ <div class="counts" id="counts"></div>
+ <div class="card">
+  <div class="qnum" id="summary">Loading…</div>
+  <table><thead><tr><th>Name</th><th>Element &amp; ability</th></tr></thead><tbody id="rows"></tbody></table>
+  <button class="btn ghost" id="refresh">Refresh</button>
+ </div>
+ <a class="btn" style="text-align:center;text-decoration:none" href="../">Take the quiz</a>
+ <div class="foot">A just-for-fun fan quiz made for our young adults group.<br>Not affiliated with or endorsed by Nickelodeon or the creators of Avatar: The Last Airbender.</div>
+</div>
+<script src="../config.js?v=3"></script>
+<script src="../questions.js?v=3"></script>
+<script>
+(function(){
+var C=window.BQ_CONFIG,EL=window.BQ_ELEMENTS,ORD=window.BQ_ORDER;
+var ARCHIVE="https://raw.githubusercontent.com/david-t6/Benji-links/main/bender/data/public.json";
+function $(id){return document.getElementById(id);}
+function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
+async function load(){
+ var msgs={};
+ try{var a=await (await fetch(ARCHIVE+"?t="+Date.now(),{cache:"no-store"})).json();(a.items||[]).forEach(function(it){msgs[it.id]=it;});}catch(e){}
+ try{var t=await (await fetch("https://ntfy.sh/"+C.pubTopic+"/json?poll=1&since=all",{cache:"no-store"})).text();
+  t.split("\n").forEach(function(l){if(!l.trim())return;try{var m=JSON.parse(l);if(m.event==="message")msgs[m.id]={id:m.id,time:m.time,message:m.message};}catch(e){}});}catch(e){}
+ var list=[],seen={};
+ Object.keys(msgs).map(function(k){return msgs[k];}).sort(function(x,y){return y.time-x.time;}).forEach(function(it){
+  if(it.time<(C.startAfter||0))return;var r;try{r=JSON.parse(it.message);}catch(e){return;}
+  if(!r||!EL[r.element]||typeof r.name!=="string")return;var nm=r.name.replace(/\s+/g," ").trim().slice(0,24);if(!nm)return;
+  var k=nm.toLowerCase();if(seen[k])return;seen[k]=1;
+  var ab=window.BQ_ABILITY(r.element,EL[r.side]?r.side:null);
+  list.push({name:nm,el:r.element,ab:ab.name,t:it.time});
+ });
+ var c={W:0,E:0,F:0,A:0};list.forEach(function(r){c[r.el]++;});
+ $("counts").innerHTML=ORD.map(function(k){return '<div class="count '+EL[k].cls+'"><b>'+c[k]+'</b>'+EL[k].name+'</div>';}).join("");
+ $("summary").textContent=list.length?list.length+(list.length===1?" bender so far":" benders so far"):"Nobody yet. Be the first!";
+ $("rows").innerHTML=list.map(function(r){var d=new Date(r.t*1000).toLocaleDateString([], {month:"short",day:"numeric"});
+  return '<tr><td><b>'+esc(r.name)+'</b><div class="hint">'+d+'</div></td><td><span class="pill" style="background:'+EL[r.el].color+'">'+EL[r.el].name+'</span><div style="margin-top:4px;font-size:14px">'+esc(r.ab)+'</div></td></tr>';}).join("");
+}
+$("refresh").onclick=load;load();
+})();
+</script>
+</body></html>

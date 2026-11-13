@@ -8,7 +8,7 @@ var nameIn=$("name");
 function cleanName(v){return v.replace(/[^\p{L}\p{M}' .-]/gu,"").replace(/\s+/g," ").trim().slice(0,24);}
 nameIn.addEventListener("input",function(){$("go").disabled=cleanName(nameIn.value).length<1;});
 nameIn.addEventListener("keydown",function(e){if(e.key==="Enter"&&!$("go").disabled)$("go").click();});
-$("go").onclick=function(){name=cleanName(nameIn.value);$("start").classList.add("hide");$("quiz").classList.remove("hide");show();};
+$("go").onclick=function(){name=cleanName(nameIn.value);$("start").classList.add("hide");$("grouplink").classList.add("hide");$("quiz").classList.remove("hide");show();};
 $("back").onclick=function(){if(i>0){i--;show();}else{$("quiz").classList.add("hide");$("start").classList.remove("hide");}};
 function show(){
  var q=Q[i];$("bar").style.width=(i/Q.length*100)+"%";$("qnum").textContent="Question "+(i+1)+" of "+Q.length;$("qtext").textContent=q.q;
@@ -26,7 +26,7 @@ async function encrypt(obj){
  var ct=await sub.encrypt({name:"AES-GCM",iv:iv},key,new TextEncoder().encode(JSON.stringify(obj)));
  return {v:1,e:b64(await sub.exportKey("raw",eph.publicKey)),iv:b64(iv),ct:b64(ct)};
 }
-var saved=false;
+var saved=false,pubSent=false;
 async function save(rec,tries){
  var body=JSON.stringify(await encrypt(rec));
  for(var t=0;t<(tries||4);t++){
@@ -37,14 +37,14 @@ async function save(rec,tries){
 }
 function finish(){
  $("quiz").classList.add("hide");
- var r=window.BQ_SCORE(picks),E=EL[r.element],tot=Q.length;
- var rec={id:(crypto.randomUUID?crypto.randomUUID():String(Date.now())+Math.random()),name:name,result:r.element,side:r.side,tie:r.tie,scores:r.scores,answers:picks,at:new Date().toISOString(),ver:1};
+ var r=window.BQ_SCORE(picks),E=EL[r.element],tot=Q.length,AB=window.BQ_ABILITY(r.element,r.side);
+ var rec={id:(crypto.randomUUID?crypto.randomUUID():String(Date.now())+Math.random()),name:name,result:r.element,side:r.side,tie:r.tie,scores:r.scores,ability:AB.name,answers:picks,at:new Date().toISOString(),ver:1};
  var bars=ORD.map(function(k){return '<div class="bar"><span class="n">'+EL[k].name+'</span><span class="t"><div style="width:'+(r.scores[k]/tot*100)+'%;background:'+EL[k].color+'"></div></span><span class="v">'+r.scores[k]+'</span></div>';}).join("");
  var side=r.side?'<p style="text-align:center;color:var(--muted);margin-top:-6px">with a little '+EL[r.side].name+' on the side</p>':"";
- $("result").innerHTML='<div class="big-emb '+E.cls+'">'+IC[r.element]+'</div><div class="qnum">'+esc(name)+', you are a</div><h2>'+E.name+' Bender</h2><p class="tag" style="color:'+E.color+'">'+E.tag+'</p>'+side+'<p>'+E.desc+'</p><p class="verse">'+E.verse+'</p><div class="bars">'+bars+'</div><div class="hint" id="status" style="text-align:center">Saving your result…</div><button class="btn hide" id="retry">Try saving again</button><button class="btn ghost" id="again">Take it again</button>';
+ $("result").innerHTML='<div class="big-emb '+E.cls+'">'+IC[r.element]+'</div><div class="qnum">'+esc(name)+', you are a</div><h2>'+E.name+' Bender</h2><p class="tag" style="color:'+E.color+'">'+E.tag+'</p>'+side+'<div style="border:1.5px solid '+E.color+';border-radius:14px;padding:12px;margin:8px 0 6px"><div class="qnum">Your bending ability</div><div style="font-size:20px;font-weight:800;color:'+E.color+'">'+esc(AB.name)+'</div><div class="hint" style="margin-top:4px">'+esc(AB.desc)+'</div></div><p>'+E.desc+'</p><p class="verse">'+E.verse+'</p><div class="bars">'+bars+'</div><div class="hint" id="status" style="text-align:center">Saving your result…</div><button class="btn hide" id="retry">Try saving again</button><a class="btn" style="text-align:center;text-decoration:none" href="group/">See what everyone got →</a><button class="btn ghost" id="again">Take it again</button>';
  $("result").classList.remove("hide");window.scrollTo(0,0);
  $("again").onclick=function(){location.reload();};
- function attempt(){$("status").textContent="Saving your result…";$("retry").classList.add("hide");save(rec).then(function(ok){if(ok){saved=true;$("status").textContent="✓ Saved! Screenshot this and drop it in the group chat.";}else{$("status").textContent="Couldn't save. Check your connection and tap below.";$("retry").classList.remove("hide");}});}
+ function attempt(){$("status").textContent="Saving your result…";$("retry").classList.add("hide");save(rec).then(function(ok){if(ok&&C.pubTopic&&!pubSent){pubSent=true;var pub=JSON.stringify({v:1,id:rec.id,name:name,element:r.element,side:r.side,ability:AB.name,at:rec.at});(function go(n){fetch("https://ntfy.sh/"+C.pubTopic,{method:"POST",body:pub}).then(function(x){if(!x.ok&&n<3)setTimeout(function(){go(n+1);},1500);}).catch(function(){if(n<3)setTimeout(function(){go(n+1);},1500);});})(0);}if(ok){saved=true;$("status").textContent="✓ Saved! Screenshot this and drop it in the group chat.";}else{$("status").textContent="Couldn't save. Check your connection and tap below.";$("retry").classList.remove("hide");}});}
  $("retry").onclick=attempt;attempt();
 }
 })();
