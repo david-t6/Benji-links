@@ -10,5 +10,10 @@ window.BQ_CONFIG = {
   "ct": "Pp4kR0LJ/hn4LMM6ZlgdCCir3k0cYpQ1souW9ZQiQU5ae7nki1phrtsx3A87YwCLPw5n4+qS85QrZMtT+mHRPLIkKRzFqvfZ9f+Yaf0H8ygo7bvYauzFLZYy2nyy30W6vavMRm5Pv1hCimfIQNGw5xCpXRpO1auFq5wYqY0MYAZCgWp3XHcmu8hHcPBgyoCEftDCdRZ0rBFyIg=="
  },
  "startAfter": 1794545693,
- "pubTopic": "bqp-819a61ab7fd09822712cf015"
+ "pubTopic": "bqp-819a61ab7fd09822712cf015",
+ "ignoreIds": [
+  "4a6f58e1-d797-44a6-b431-8601de234223",
+  "ca56a6e8-03d8-4a84-b856-699a170d38e4",
+  "461af8a5-daad-48ca-9027-4a5c1395ebfe"
+ ]
 };

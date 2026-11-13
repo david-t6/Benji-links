@@ -26,7 +26,7 @@ async function load(){
  try{var t=await (await fetch("https://ntfy.sh/"+C.topic+"/json?poll=1&since=all",{cache:"no-store"})).text();
   t.split("\n").forEach(function(l){if(!l.trim())return;try{var m=JSON.parse(l);if(m.event==="message")msgs[m.id]={id:m.id,time:m.time,message:m.message};}catch(e){}});}catch(e){problems.push("live feed");}
  var out=[],seen={};
- for(var id in msgs){var it=msgs[id];if(it.time<(C.startAfter||0))continue;try{var r=await dec(it.message);if(seen[r.id])continue;seen[r.id]=1;if(!EL[r.result])continue;r._t=it.time;out.push(r);}catch(e){}}
+ for(var id in msgs){var it=msgs[id];if(it.time<(C.startAfter||0))continue;try{var r=await dec(it.message);if(seen[r.id]||(C.ignoreIds||[]).indexOf(r.id)>=0)continue;seen[r.id]=1;if(!EL[r.result])continue;r._t=it.time;out.push(r);}catch(e){}}
  out.sort(function(x,y){return y._t-x._t;});all=out;render();
  $("note").textContent="Updated "+new Date().toLocaleTimeString([], {hour:"numeric",minute:"2-digit"})+(problems.length?" · couldn't reach the "+problems.join(" or "):"");
 }
