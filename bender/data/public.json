@@ -1,5 +1,5 @@
 {
-"last_id": "Ou6JIuvvXTjA",
+"last_id": "lLNeZJasofi3",
 "items": [
 {
 "id": "tXir0xzkSVYf",
@@ -565,6 +565,56 @@
 "id": "Ou6JIuvvXTjA",
 "time": 1794616571,
 "message": "{\"v\":1,\"id\":\"08ef9ddf-1848-42d1-b7cf-ff89f61fd2ec\",\"name\":\"Lucky\",\"element\":\"W\",\"side\":\"A\",\"ability\":\"Mist & cloud bending\",\"at\":\"2026-11-14T00:36:11.358Z\"}"
+},
+{
+"id": "IxKTuZr2WgIt",
+"time": 1794618366,
+"message": "{\"v\":1,\"id\":\"b3ab5b17-44dd-4a1f-bcdf-d8e21900ddbc\",\"name\":\"Rebecca\",\"element\":\"E\",\"side\":\"F\",\"ability\":\"Lavabending\",\"at\":\"2026-11-14T01:06:05.887Z\"}"
+},
+{
+"id": "yN7QnzIZpVQr",
+"time": 1794618381,
+"message": "{\"v\":1,\"id\":\"6c658d5e-1818-4224-aebe-947b4e2382a1\",\"name\":\"Abby\",\"element\":\"W\",\"side\":\"E\",\"ability\":\"Plantbending\",\"at\":\"2026-11-14T01:06:21.078Z\"}"
+},
+{
+"id": "X3r78QlB02fe",
+"time": 1794619889,
+"message": "{\"v\":1,\"id\":\"e7e0bf39-3010-4a61-9193-1339cf068d3d\",\"name\":\"Austin M\",\"element\":\"E\",\"side\":\"W\",\"ability\":\"Seismic sense\",\"at\":\"2026-11-14T01:31:29.203Z\"}"
+},
+{
+"id": "Xe5cgwjXDSjA",
+"time": 1794620109,
+"message": "{\"v\":1,\"id\":\"097cbd17-2a7e-4b42-bd4e-141269a57c31\",\"name\":\"Cory\",\"element\":\"E\",\"side\":\"W\",\"ability\":\"Seismic sense\",\"at\":\"2026-11-14T01:35:09.685Z\"}"
+},
+{
+"id": "694jjK5itVx1",
+"time": 1794620217,
+"message": "{\"v\":1,\"id\":\"fd9297f9-44e8-4d1b-bc90-428a41cce165\",\"name\":\"Kristen\",\"element\":\"W\",\"side\":\"E\",\"ability\":\"Plantbending\",\"at\":\"2026-11-14T01:36:56.797Z\"}"
+},
+{
+"id": "Q1vI5iS08k2u",
+"time": 1794620487,
+"message": "{\"v\":1,\"id\":\"cb78d002-9621-45e1-bda7-90ec46efea37\",\"name\":\"Shaun\",\"element\":\"F\",\"side\":\"A\",\"ability\":\"Jet-flame flight\",\"at\":\"2026-11-14T01:41:27.695Z\"}"
+},
+{
+"id": "ANHE6OuwKWOi",
+"time": 1794622889,
+"message": "{\"v\":1,\"id\":\"ca0d91ef-9912-4aa2-b710-3e985cd07454\",\"name\":\"Vince\",\"element\":\"A\",\"side\":\"W\",\"ability\":\"Spiritual projection\",\"at\":\"2026-11-14T02:21:29.140Z\"}"
+},
+{
+"id": "eW84OjTHwKt6",
+"time": 1794624944,
+"message": "{\"v\":1,\"id\":\"17478754-adfc-47fc-bc52-9eeb366cb8d5\",\"name\":\"Lisa\",\"element\":\"W\",\"side\":\"A\",\"ability\":\"Mist & cloud bending\",\"at\":\"2026-11-14T02:55:44.282Z\"}"
+},
+{
+"id": "spa58j9pFJCS",
+"time": 1794632035,
+"message": "{\"v\":1,\"id\":\"39f7e5f9-8c06-4280-97e1-018628e332f6\",\"name\":\"Emily\",\"element\":\"W\",\"side\":\"F\",\"ability\":\"Icebending\",\"at\":\"2026-11-14T04:53:54.775Z\"}"
+},
+{
+"id": "lLNeZJasofi3",
+"time": 1794632494,
+"message": "{\"v\":1,\"id\":\"3b3f7edc-0310-412a-8bd5-ac11565fcae5\",\"name\":\"Isa C\",\"element\":\"E\",\"side\":\"W\",\"ability\":\"Seismic sense\",\"at\":\"2026-11-14T05:01:33.738Z\"}"
 }
 ]
 }
