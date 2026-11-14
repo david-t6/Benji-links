@@ -1,5 +1,5 @@
 {
-"last_id": "lLNeZJasofi3",
+"last_id": "rbTPok6QCPhE",
 "items": [
 {
 "id": "tXir0xzkSVYf",
@@ -615,6 +615,11 @@
 "id": "lLNeZJasofi3",
 "time": 1794632494,
 "message": "{\"v\":1,\"id\":\"3b3f7edc-0310-412a-8bd5-ac11565fcae5\",\"name\":\"Isa C\",\"element\":\"E\",\"side\":\"W\",\"ability\":\"Seismic sense\",\"at\":\"2026-11-14T05:01:33.738Z\"}"
+},
+{
+"id": "rbTPok6QCPhE",
+"time": 1794675662,
+"message": "{\"v\":1,\"id\":\"f0f6d210-d85c-4aed-b015-7eb91c07862a\",\"name\":\"Katherine\",\"element\":\"W\",\"side\":\"A\",\"ability\":\"Mist & cloud bending\",\"at\":\"2026-11-14T17:01:01.437Z\"}"
 }
 ]
 }
