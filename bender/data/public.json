@@ -1,5 +1,5 @@
 {
-"last_id": "rbTPok6QCPhE",
+"last_id": "tsIxYrTxrQRk",
 "items": [
 {
 "id": "tXir0xzkSVYf",
@@ -620,6 +620,26 @@
 "id": "rbTPok6QCPhE",
 "time": 1794675662,
 "message": "{\"v\":1,\"id\":\"f0f6d210-d85c-4aed-b015-7eb91c07862a\",\"name\":\"Katherine\",\"element\":\"W\",\"side\":\"A\",\"ability\":\"Mist & cloud bending\",\"at\":\"2026-11-14T17:01:01.437Z\"}"
+},
+{
+"id": "qvcFKMBVr15R",
+"time": 1794767563,
+"message": "{\"v\":1,\"id\":\"abcfccdf-e160-48b5-a85c-83cb1fca0b9f\",\"name\":\"Sydney\",\"element\":\"F\",\"side\":\"W\",\"ability\":\"Lightning redirection\",\"at\":\"2026-11-15T18:32:42.808Z\"}"
+},
+{
+"id": "Y55Jg8cO4x7h",
+"time": 1794770523,
+"message": "{\"v\":1,\"id\":\"d7352fd6-4851-451d-94f4-5a0ef33a08ee\",\"name\":\"Anthony\",\"element\":\"F\",\"side\":\"W\",\"ability\":\"Lightning redirection\",\"at\":\"2026-11-15T19:22:03.475Z\"}"
+},
+{
+"id": "2C0gusn3b7Ju",
+"time": 1794770543,
+"message": "{\"v\":1,\"id\":\"222e2028-386b-4289-a406-57ecec825707\",\"name\":\"Greg\",\"element\":\"W\",\"side\":\"F\",\"ability\":\"Icebending\",\"at\":\"2026-11-15T19:22:23.559Z\"}"
+},
+{
+"id": "tsIxYrTxrQRk",
+"time": 1794777249,
+"message": "{\"v\":1,\"id\":\"6a68db5d-3e18-4f0d-b96d-343057b6b0c1\",\"name\":\"Esther\",\"element\":\"W\",\"side\":\"F\",\"ability\":\"Icebending\",\"at\":\"2026-11-15T21:14:08.790Z\"}"
 }
 ]
 }
