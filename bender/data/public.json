@@ -1,5 +1,5 @@
 {
-"last_id": "tsIxYrTxrQRk",
+"last_id": "DKLVbddr9TGe",
 "items": [
 {
 "id": "tXir0xzkSVYf",
@@ -640,6 +640,11 @@
 "id": "tsIxYrTxrQRk",
 "time": 1794777249,
 "message": "{\"v\":1,\"id\":\"6a68db5d-3e18-4f0d-b96d-343057b6b0c1\",\"name\":\"Esther\",\"element\":\"W\",\"side\":\"F\",\"ability\":\"Icebending\",\"at\":\"2026-11-15T21:14:08.790Z\"}"
+},
+{
+"id": "DKLVbddr9TGe",
+"time": 1794789727,
+"message": "{\"v\":1,\"id\":\"29817c7f-3a54-4be0-a83c-e31ecbef52ca\",\"name\":\"Jess\",\"element\":\"F\",\"side\":\"E\",\"ability\":\"Combustion\",\"at\":\"2026-11-16T00:42:06.747Z\"}"
 }
 ]
 }
