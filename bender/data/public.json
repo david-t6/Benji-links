@@ -1,5 +1,5 @@
 {
-"last_id": "DvlqCTX1zS07",
+"last_id": "u4XAwW7Qv4P2",
 "items": [
 {
 "id": "tXir0xzkSVYf",
@@ -655,6 +655,26 @@
 "id": "DvlqCTX1zS07",
 "time": 1794883554,
 "message": "{\"v\":1,\"id\":\"9b6d4136-e962-4245-ac9c-7ec99a20ed6e\",\"name\":\"Brittany\",\"element\":\"W\",\"side\":\"E\",\"ability\":\"Plantbending\",\"at\":\"2026-11-17T02:45:53.885Z\"}"
+},
+{
+"id": "Y26RLXzlX21n",
+"time": 1795049760,
+"message": "{\"v\":1,\"id\":\"ee1f365d-2e41-4113-a00d-a60588853e23\",\"name\":\"A\",\"element\":\"F\",\"side\":\"E\",\"ability\":\"Combustion\",\"at\":\"2026-11-19T00:56:00.504Z\"}"
+},
+{
+"id": "21bGpT6P22u2",
+"time": 1795050074,
+"message": "{\"v\":1,\"id\":\"747cdcb5-5ba0-408c-9700-6b69c1701393\",\"name\":\"Alemeoshua\",\"element\":\"E\",\"side\":\"F\",\"ability\":\"Lavabending\",\"at\":\"2026-11-19T01:01:14.288Z\"}"
+},
+{
+"id": "2RLMhoEWSnqR",
+"time": 1795050995,
+"message": "{\"v\":1,\"id\":\"8e2fd8d3-5582-4577-b7ae-294b7995ca4a\",\"name\":\"Baxton\",\"element\":\"E\",\"side\":\"A\",\"ability\":\"Sandbending\",\"at\":\"2026-11-19T01:16:34.863Z\"}"
+},
+{
+"id": "u4XAwW7Qv4P2",
+"time": 1795061722,
+"message": "{\"v\":1,\"id\":\"2cd910ae-46d4-48d8-b263-d870411e2917\",\"name\":\"Kevin\",\"element\":\"A\",\"side\":\"W\",\"ability\":\"Spiritual projection\",\"at\":\"2026-11-19T04:15:21.950Z\"}"
 }
 ]
 }
